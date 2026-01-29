@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View, Text, Dimensions, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Album } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
@@ -19,8 +20,9 @@ const TAB_HEIGHT = 12;
 export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = DEFAULT_SIZE, onPress }) => {
   // Use itemCount prop if provided, otherwise fall back to album.photoCount
   const count = itemCount !== undefined ? itemCount : album.photoCount;
-  const countText = count > 0 ? `${count}` : '';
+  const countText = count > 0 ? `${count} items` : '';
   const hasCoverPhoto = !!album.coverPhoto?.uri;
+  const hasUltraBlurColors = !!album.ultraBlurColors;
 
   return (
     <TouchableOpacity
@@ -32,7 +34,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = D
       <View style={[styles.folderTab, { width: size * 0.4 }]} />
 
       {/* Main folder body */}
-      <View style={[styles.folderBody, { width: size, height: size - TAB_HEIGHT - spacing.xl }]}>
+      <View style={[styles.folderBody, { width: size, height: size - TAB_HEIGHT }]}>
         {hasCoverPhoto ? (
           <>
             <Image
@@ -40,21 +42,68 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = D
               style={styles.image}
               resizeMode="cover"
             />
-            {/* Dark overlay to fade the image */}
-            <View style={styles.imageOverlay} />
+            {/* Dim overlay for background image */}
+            <View style={styles.imageDimOverlay} />
+
+            {/* 4-corner gradient overlay using all UltraBlurColors */}
+            {hasUltraBlurColors ? (
+              <View style={styles.gradientOverlay}>
+                {/* Vertical blend from top to bottom */}
+                <LinearGradient
+                  colors={[
+                    album.ultraBlurColors!.topLeft,
+                    album.ultraBlurColors!.bottomLeft,
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={[styles.gradientOverlay, { opacity: 0.2 }]}
+                />
+                <LinearGradient
+                  colors={[
+                    album.ultraBlurColors!.topRight,
+                    album.ultraBlurColors!.bottomRight,
+                  ]}
+                  start={{ x: 1, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.gradientOverlay, { opacity: 0.2 }]}
+                />
+                {/* Horizontal blend from left to right */}
+                <LinearGradient
+                  colors={[
+                    album.ultraBlurColors!.topLeft,
+                    album.ultraBlurColors!.topRight,
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.gradientOverlay, { opacity: 0.2 }]}
+                />
+                <LinearGradient
+                  colors={[
+                    album.ultraBlurColors!.bottomLeft,
+                    album.ultraBlurColors!.bottomRight,
+                  ]}
+                  start={{ x: 0, y: 1 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.gradientOverlay, { opacity: 0.2 }]}
+                />
+              </View>
+            ) : (
+              <View style={styles.imageOverlay} />
+            )}
           </>
         ) : (
           <View style={styles.placeholder}>
             <Ionicons name="folder-open" size={32} color={colors.primary} />
           </View>
         )}
-      </View>
 
-      <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={1}>
-          {album.title}
-        </Text>
-        {countText ? <Text style={styles.count}>{countText}</Text> : null}
+        {/* Title and count overlaid on folder tile */}
+        <View style={styles.infoOverlay}>
+          <Text style={styles.title} numberOfLines={1}>
+            {album.title}
+          </Text>
+          {countText ? <Text style={styles.count}>{countText}</Text> : null}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -66,12 +115,13 @@ const styles = StyleSheet.create({
   },
   folderTab: {
     height: TAB_HEIGHT,
-    borderTopLeftRadius: borderRadius.sm,
-    borderTopRightRadius: 2,
+    borderTopLeftRadius: borderRadius.md,
+    borderTopRightRadius: borderRadius.sm,
     marginBottom: -2, // Overlap slightly with body
+    backgroundColor: colors.surfaceLight,
   },
   folderBody: {
-    borderRadius: borderRadius.sm,
+    borderRadius: borderRadius.md,
     borderTopLeftRadius: 0, // Flat where tab connects
     overflow: 'hidden',
     backgroundColor: colors.surface,
@@ -79,12 +129,19 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    opacity: 0.6,
+  },
+  imageDimOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.35)',
   },
-
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
   placeholder: {
     width: '100%',
     height: '100%',
@@ -92,18 +149,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  info: {
-    paddingTop: 2,
-    paddingHorizontal: 2,
+  infoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.sm,
   },
   title: {
     ...typography.small,
     fontWeight: '600',
     color: colors.textPrimary,
+    textAlign: 'center',
   },
   count: {
     ...typography.small,
     color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
 });
 

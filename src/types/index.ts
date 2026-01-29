@@ -28,6 +28,12 @@ export interface Album {
   photoCount: number;
   createdAt: Date;
   index?: number; // Custom sort order from Plex
+  ultraBlurColors?: {
+    topLeft: string;
+    topRight: string;
+    bottomLeft: string;
+    bottomRight: string;
+  }; // 4-corner colors from UltraBlurColors for gradient overlay
 }
 
 export interface PhotoGroup {
@@ -137,6 +143,12 @@ export interface PlexAlbum {
   updatedAt: number;
   leafCount?: number; // Number of photos in album
   index?: number;
+  UltraBlurColors?: {
+    topLeft?: string;
+    topRight?: string;
+    bottomRight?: string;
+    bottomLeft?: string;
+  };
 }
 
 export interface AuthState {

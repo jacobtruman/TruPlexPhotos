@@ -467,6 +467,7 @@ export async function getAlbumsFromLibrary(
     if (allItems.length > 0) {
       console.log(`Plex: Item types found:`, [...new Set(allItems.map((item: any) => item.type))]);
       console.log(`Plex: First item keys:`, Object.keys(allItems[0]).join(', '));
+      console.log(`Plex: First item UltraBlurColors:`, JSON.stringify(allItems[0].UltraBlurColors, null, 2));
     }
 
     // Filter for folders - items with /children in their key
@@ -515,6 +516,22 @@ export function convertPlexAlbumsToAlbums(
     // Plex uses different properties depending on the endpoint/type
     const itemCount = album.leafCount || album.childCount || album.size || 0;
 
+    // Extract all 4 corner colors from UltraBlurColors for 4-corner gradient overlay
+    let ultraBlurColors: { topLeft: string; topRight: string; bottomLeft: string; bottomRight: string } | undefined;
+    if (album.UltraBlurColors) {
+      const colors = album.UltraBlurColors;
+
+      // Ensure all 4 corners have colors (add # prefix if missing)
+      if (colors.topLeft && colors.topRight && colors.bottomLeft && colors.bottomRight) {
+        ultraBlurColors = {
+          topLeft: colors.topLeft.startsWith('#') ? colors.topLeft : `#${colors.topLeft}`,
+          topRight: colors.topRight.startsWith('#') ? colors.topRight : `#${colors.topRight}`,
+          bottomLeft: colors.bottomLeft.startsWith('#') ? colors.bottomLeft : `#${colors.bottomLeft}`,
+          bottomRight: colors.bottomRight.startsWith('#') ? colors.bottomRight : `#${colors.bottomRight}`,
+        };
+      }
+    }
+
     return {
       id: uniqueId,
       key: album.key, // Store the Plex key for fetching photos (path-based)
@@ -524,6 +541,7 @@ export function convertPlexAlbumsToAlbums(
       photoCount: itemCount,
       createdAt: new Date((album.addedAt || 0) * 1000),
       index: album.index, // Custom sort order from Plex
+      ultraBlurColors, // 4-corner colors from UltraBlurColors for gradient overlay
     };
   });
 }
