@@ -1,8 +1,5 @@
 import { PlexServer, Photo, Album, PlexAlbum } from '../types';
 
-// Cache for sorted photo lists (to avoid re-fetching on pagination)
-const photoCache: { [key: string]: any[] } = {};
-
 export interface PlexLibrary {
   key: string;
   title: string;
@@ -332,73 +329,45 @@ export async function getPhotosFromLibrary(
   token: string,
   libraryKey: string,
   start: number = 0,
-  limit: number = 100
+  limit: number = 1000
 ): Promise<PhotosResult> {
   try {
-    // Fetch ALL photos from all folders, sort by date, then paginate
-    // We cache the full list to avoid re-fetching on subsequent pages
-
     console.log(`Plex: getPhotosFromLibrary called with start=${start}, limit=${limit}`);
 
-    // Check if we have a cached photo list for this library
-    const cacheKey = `${server.name}-${libraryKey}`;
-    if (!photoCache[cacheKey] || start === 0) {
-      // Need to fetch all photos
-      console.log(`Plex: Fetching all photos from library...`);
-
-      // Fetch photos using clusterZoomLevel only (without clustering<= filter)
-      // This should return individual photos instead of folders
-      console.log(`Plex: Fetching photos with clusterZoomLevel...`);
-      const photosResponse = await fetchWithFallback(
-        server,
-        `/library/sections/${libraryKey}/all`,
-        token,
-        {
-          extraParams: {
-            'clusterZoomLevel': '1',
-            'X-Plex-Container-Start': '0',
-            'X-Plex-Container-Size': '999'
-          }
+    // Fetch photos using server-side pagination with clusterZoomLevel
+    // This returns photos already sorted by Plex (newest first)
+    const photosResponse = await fetchWithFallback(
+      server,
+      `/library/sections/${libraryKey}/all`,
+      token,
+      {
+        extraParams: {
+          'clusterZoomLevel': '1',
+          'X-Plex-Container-Start': start.toString(),
+          'X-Plex-Container-Size': limit.toString()
         }
-      );
-      const photosData = await photosResponse.json();
-      const allPhotos = photosData.MediaContainer?.Metadata || [];
-
-      console.log(`Plex: Fetch returned ${allPhotos.length} items`);
-
-      // Debug: log first photo to see available fields
-      if (allPhotos.length > 0) {
-        const sample = allPhotos[0];
-        console.log(`\n\n========== PHOTO DEBUG ==========`);
-        console.log(`All fields: ${JSON.stringify(sample, null, 2)}`);
-        console.log(`=================================\n\n`);
       }
+    );
+    const photosData = await photosResponse.json();
+    const photos = photosData.MediaContainer?.Metadata || [];
+    const totalSize = photosData.MediaContainer?.totalSize || photos.length;
 
-      console.log(`Plex: Found ${allPhotos.length} total photos`);
+    console.log(`Plex: Fetched ${photos.length} photos (${start} to ${start + photos.length}) of ${totalSize} total`);
 
-      // Sort by date (newest first) - use originallyAvailableAt or addedAt
-      allPhotos.sort((a, b) => {
-        const dateA = a.originallyAvailableAt || a.addedAt || 0;
-        const dateB = b.originallyAvailableAt || b.addedAt || 0;
-        // Handle string dates (YYYY-MM-DD) and timestamps
-        const timeA = typeof dateA === 'string' ? new Date(dateA).getTime() : dateA * 1000;
-        const timeB = typeof dateB === 'string' ? new Date(dateB).getTime() : dateB * 1000;
-        return timeB - timeA; // Newest first
-      });
-
-      // Cache the sorted list
-      photoCache[cacheKey] = allPhotos;
+    // Debug: log first photo on initial fetch to see available fields
+    if (start === 0 && photos.length > 0) {
+      const sample = photos[0];
+      console.log(`\n\n========== PHOTO DEBUG ==========`);
+      console.log(`All fields: ${JSON.stringify(sample, null, 2)}`);
+      console.log(`=================================\n\n`);
     }
 
-    const cachedPhotos = photoCache[cacheKey];
-    const pagePhotos = cachedPhotos.slice(start, start + limit);
-    const hasMore = start + limit < cachedPhotos.length;
-
-    console.log(`Plex: Returning ${pagePhotos.length} photos (${start} to ${start + pagePhotos.length} of ${cachedPhotos.length})`);
+    // Check if there are more photos to load
+    const hasMore = start + photos.length < totalSize;
 
     return {
-      photos: pagePhotos,
-      totalSize: cachedPhotos.length,
+      photos,
+      totalSize,
       hasMore
     };
   } catch (error) {
@@ -691,7 +660,9 @@ export function convertPlexPhotosToPhotos(
     let createdAt: Date;
     if (item.originallyAvailableAt) {
       // originallyAvailableAt is a string like "2025-01-15"
-      createdAt = new Date(item.originallyAvailableAt);
+      // Parse as local date to avoid timezone shifts
+      const [year, month, day] = item.originallyAvailableAt.split('-').map(Number);
+      createdAt = new Date(year, month - 1, day);
     } else {
       // addedAt is a Unix timestamp
       createdAt = new Date(item.addedAt * 1000);

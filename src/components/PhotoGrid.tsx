@@ -76,7 +76,6 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const renderSectionHeader = ({ section }: { section: SectionListData<Photo[], PhotoSection> }) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{section.title}</Text>
-      <Text style={styles.photoCount}>{section.allPhotos.length} photos</Text>
     </View>
   );
 
@@ -126,10 +125,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '600',
     color: colors.textPrimary,
-  },
-  photoCount: {
-    ...typography.caption,
-    color: colors.textSecondary,
   },
   row: {
     flexDirection: 'row',

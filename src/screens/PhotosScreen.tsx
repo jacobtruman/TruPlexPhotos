@@ -11,7 +11,7 @@ import { getPhotosFromLibrary, convertPlexPhotosToPhotos, PhotosResult } from '.
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 1000;
 
 export const PhotosScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -51,22 +51,18 @@ export const PhotosScreen: React.FC = () => {
       const result = await getPhotosFromLibrary(selectedServer, serverToken, selectedLibrary.key, 0, PAGE_SIZE);
       const fetchedPhotos = convertPlexPhotosToPhotos(result.photos, selectedServer, serverToken);
 
-      // Debug: log first 3 photos before and after sort
-      console.log(`\n========== BEFORE SORT ==========`);
-      fetchedPhotos.slice(0, 3).forEach((p, i) => {
-        console.log(`${i}: ${p.title || p.filename} - ${p.createdAt.toISOString()}`);
-      });
-
-      // Sort by date, newest first
-      fetchedPhotos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-      console.log(`\n========== AFTER SORT ==========`);
-      fetchedPhotos.slice(0, 3).forEach((p, i) => {
-        console.log(`${i}: ${p.title || p.filename} - ${p.createdAt.toISOString()}`);
-      });
-      console.log(`=================================\n`);
-
+      // Photos are already sorted by Plex (newest first)
       console.log(`Plex: Loaded ${fetchedPhotos.length} photos from "${selectedLibrary.title}" (total: ${result.totalSize})`);
+
+      // Debug: log first 3 photos
+      if (fetchedPhotos.length > 0) {
+        console.log(`\n========== FIRST 3 PHOTOS ==========`);
+        fetchedPhotos.slice(0, 3).forEach((p, i) => {
+          console.log(`${i}: ${p.title || p.filename} - ${p.createdAt.toISOString()}`);
+        });
+        console.log(`====================================\n`);
+      }
+
       setPhotos(fetchedPhotos);
       setHasMore(result.hasMore);
       setTotalCount(result.totalSize);

@@ -270,11 +270,8 @@ export const PhotoViewerScreen: React.FC = () => {
               <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
             <View style={styles.headerInfo}>
-              <Text style={styles.photoDate}>
-                {formatDate(new Date(currentPhoto.createdAt))}
-              </Text>
-              <Text style={styles.photoIndex}>
-                {currentIndex + 1} of {photos.length}
+              <Text style={styles.photoTitle} numberOfLines={1}>
+                {currentPhoto.title || currentPhoto.filename}
               </Text>
             </View>
             <View style={styles.iconButton} />
@@ -468,16 +465,14 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: spacing.sm,
   },
-  photoDate: {
+  photoTitle: {
     color: colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
-  },
-  photoIndex: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginTop: 2,
+    textAlign: 'center',
   },
   footer: {
     position: 'absolute',
