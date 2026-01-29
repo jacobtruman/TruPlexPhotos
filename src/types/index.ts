@@ -151,6 +151,7 @@ export interface AuthState {
   selectedServer: PlexServer | null;
   selectedLibrary: PlexLibrary | null;
   libraries: PlexLibrary[];
+  selectedTab: keyof RootTabParamList;
 }
 
 export type RootTabParamList = {

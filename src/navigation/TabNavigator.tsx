@@ -4,12 +4,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { PhotosScreen, AlbumsScreen } from '../screens';
 import { colors } from '../theme';
 import { RootTabParamList } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export const TabNavigator: React.FC = () => {
+  const { selectedTab, setSelectedTab } = useAuth();
+
   return (
     <Tab.Navigator
+      initialRouteName={selectedTab}
+      screenListeners={{
+        state: (e) => {
+          // Detect tab changes from the navigation state
+          const state = e.data.state;
+          if (state) {
+            const currentRoute = state.routes[state.index];
+            const tabName = currentRoute?.name as keyof RootTabParamList;
+            if (tabName && (tabName === 'Timeline' || tabName === 'Library')) {
+              if (tabName !== selectedTab) {
+                console.log(`Plex: Tab changed to "${tabName}"`);
+                setSelectedTab(tabName);
+              }
+            }
+          }
+        },
+      }}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {

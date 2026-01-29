@@ -26,6 +26,7 @@ const STORAGE_KEYS = {
   SELECTED_PROFILE: 'plex_selected_profile',
   SELECTED_SERVER: 'plex_selected_server',
   SELECTED_LIBRARY: 'plex_selected_library',
+  SELECTED_TAB: 'plex_selected_tab',
 };
 
 const initialState: AuthState = {
@@ -40,6 +41,7 @@ const initialState: AuthState = {
   selectedServer: null,
   selectedLibrary: null,
   libraries: [],
+  selectedTab: 'Timeline',
 };
 
 interface AuthContextType extends AuthState {
@@ -53,6 +55,7 @@ interface AuthContextType extends AuthState {
   clearLibrary: () => Promise<void>;
   refreshServers: () => Promise<void>;
   refreshLibraries: () => Promise<void>;
+  setSelectedTab: (tab: 'Timeline' | 'Library') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -131,6 +134,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log(`Plex: Restored saved library "${savedLibrary.title}", found: ${actualLibrary ? 'yes' : 'no'}`);
         }
 
+        // Load profile-specific tab selection
+        const tabKey = selectedProfile
+          ? `${STORAGE_KEYS.SELECTED_TAB}_${selectedProfile.id}`
+          : STORAGE_KEYS.SELECTED_TAB;
+        const savedTab = await SecureStore.getItemAsync(tabKey);
+        const selectedTab: 'Timeline' | 'Library' = (savedTab === 'Timeline' || savedTab === 'Library') ? savedTab : 'Timeline';
+
         setState({
           isAuthenticated: true,
           isLoading: false,
@@ -143,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           selectedServer: actualServer,
           selectedLibrary: actualLibrary,
           libraries,
+          selectedTab,
         });
       } else {
         setState({ ...initialState, isLoading: false, clientIdentifier: clientId });
@@ -270,6 +281,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log(`Plex: Restored saved library "${savedLibrary.title}" for profile "${profile.title}", found: ${selectedLibrary ? 'yes' : 'no'}`);
       }
 
+      // Load this profile's saved tab selection
+      const tabKey = `${STORAGE_KEYS.SELECTED_TAB}_${profile.id}`;
+      const savedTab = await SecureStore.getItemAsync(tabKey);
+      const selectedTab: 'Timeline' | 'Library' = (savedTab === 'Timeline' || savedTab === 'Library') ? savedTab : 'Timeline';
+
       setState(prev => ({
         ...prev,
         isLoading: false,
@@ -279,6 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         selectedServer,
         selectedLibrary,
         libraries,
+        selectedTab,
       }));
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));
@@ -365,6 +382,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [state.selectedServer]);
 
+  const setSelectedTab = useCallback(async (tab: 'Timeline' | 'Library') => {
+    // Store tab selection per profile
+    const tabKey = state.selectedProfile
+      ? `${STORAGE_KEYS.SELECTED_TAB}_${state.selectedProfile.id}`
+      : STORAGE_KEYS.SELECTED_TAB;
+    console.log(`Plex: Saving selected tab "${tab}" with key: ${tabKey}`);
+    await SecureStore.setItemAsync(tabKey, tab);
+    setState(prev => ({ ...prev, selectedTab: tab }));
+  }, [state.selectedProfile]);
+
   const contextValue: AuthContextType = {
     ...state,
     login,
@@ -377,6 +404,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearLibrary,
     refreshServers,
     refreshLibraries,
+    setSelectedTab,
   };
 
   return (

@@ -11,6 +11,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
@@ -161,6 +162,16 @@ export const ProfileSelectionScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Loading Overlay */}
+      {isSwitching && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContent}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading profile...</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -305,5 +316,27 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.backgroundDark,
     fontWeight: '600',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.textPrimary,
+    marginTop: spacing.md,
   },
 });
