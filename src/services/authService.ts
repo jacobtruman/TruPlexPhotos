@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import * as Crypto from 'expo-crypto';
+import { Platform } from 'react-native';
 import { PlexPin, PlexUser, PlexProfile, PlexServer, PlexResource, PlexConnection } from '../types';
 
 const PLEX_API_BASE = 'https://plex.tv/api/v2';
@@ -29,14 +30,19 @@ export async function getClientIdentifier(): Promise<string> {
 // Build standard Plex headers
 async function getPlexHeaders(authToken?: string | null): Promise<Record<string, string>> {
   const clientId = await getClientIdentifier();
+
+  // Detect platform dynamically
+  const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
+  const platformVersion = Platform.Version?.toString() || '14';
+
   const headers: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'X-Plex-Product': APP_NAME,
     'X-Plex-Version': APP_VERSION,
     'X-Plex-Client-Identifier': clientId,
-    'X-Plex-Platform': 'Android',
-    'X-Plex-Platform-Version': '14',
+    'X-Plex-Platform': platform,
+    'X-Plex-Platform-Version': platformVersion,
     'X-Plex-Device': 'Mobile',
     'X-Plex-Device-Name': APP_NAME,
   };
@@ -49,14 +55,22 @@ async function getPlexHeaders(authToken?: string | null): Promise<Record<string,
 // Create a new PIN for authentication
 export async function createPin(): Promise<PlexPin> {
   const headers = await getPlexHeaders();
+  console.log('Plex Auth: Creating PIN with headers:', JSON.stringify(headers, null, 2));
+
   const response = await fetch(`${PLEX_API_BASE}/pins?strong=true`, {
     method: 'POST',
     headers,
   });
+
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Plex Auth: Failed to create PIN:', response.status, errorText);
     throw new Error(`Failed to create PIN: ${response.status}`);
   }
-  return response.json();
+
+  const pin = await response.json();
+  console.log('Plex Auth: PIN created successfully:', JSON.stringify(pin, null, 2));
+  return pin;
 }
 
 // Check if PIN has been authorized
@@ -75,7 +89,21 @@ export async function checkPin(pinId: number): Promise<PlexPin> {
 // Open browser for Plex authentication
 export async function openPlexAuth(pinCode: string): Promise<WebBrowser.WebBrowserResult> {
   const clientId = await getClientIdentifier();
-  const authUrl = `https://app.plex.tv/auth#?clientID=${clientId}&code=${pinCode}&context[device][product]=${encodeURIComponent(APP_NAME)}`;
+
+  // Build auth URL with proper encoding per Plex documentation
+  // context[device][product] must be encoded as context%5Bdevice%5D%5Bproduct%5D
+  const params = new URLSearchParams({
+    clientID: clientId,
+    code: pinCode,
+    'context[device][product]': APP_NAME,
+  });
+
+  const authUrl = `https://app.plex.tv/auth#?${params.toString()}`;
+
+  console.log('Plex Auth: Opening browser with URL:', authUrl);
+  console.log('Plex Auth: Client ID:', clientId);
+  console.log('Plex Auth: PIN Code:', pinCode);
+
   return WebBrowser.openBrowserAsync(authUrl);
 }
 
