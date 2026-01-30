@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PhotoGrid, ProfileButton, LibraryDropdown } from '../components';
-import { colors, spacing, typography } from '../theme';
+import { PhotoGrid, ProfileButton, LibraryDropdown, LoadingState } from '../components';
+import { colors, spacing, commonStyles } from '../theme';
 import { Photo, RootStackParamList, photoToSerializable } from '../types';
 import { groupPhotosByDate } from '../utils/photoUtils';
 import { useAuth } from '../context/AuthContext';
@@ -113,37 +113,23 @@ export const PhotosScreen: React.FC = () => {
     loadMorePhotos();
   }, [loadMorePhotos]);
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <LibraryDropdown />
-            <ProfileButton />
-          </View>
-        </View>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading photos...</Text>
-        </View>
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerRow}>
+        <LibraryDropdown />
+        <ProfileButton />
       </View>
-    );
-  }
+    </View>
+  );
 
-  if (error) {
+  if (loading || error) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <LibraryDropdown />
-            <ProfileButton />
-          </View>
-        </View>
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.errorHint}>Pull down to retry</Text>
-        </View>
-      </View>
+      <LoadingState
+        loading={loading}
+        error={error}
+        loadingText="Loading photos..."
+        header={renderHeader()}
+      />
     );
   }
 
@@ -159,12 +145,11 @@ export const PhotosScreen: React.FC = () => {
         </View>
       </View>
       {photos.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyText}>No photos found</Text>
-          <Text style={styles.emptyHint}>
-            This library doesn't have any photos
-          </Text>
-        </View>
+        <LoadingState
+          empty={true}
+          emptyText="No photos found"
+          emptyHint="This library doesn't have any photos"
+        />
       ) : (
         <PhotoGrid
           photoGroups={photoGroups}
@@ -180,62 +165,12 @@ export const PhotosScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xl + spacing.md,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.background,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.textPrimary,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.error,
-    textAlign: 'center',
-  },
-  errorHint: {
-    ...typography.small,
-    color: colors.textMuted,
-    marginTop: spacing.sm,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  emptyHint: {
-    ...typography.small,
-    color: colors.textMuted,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitleContainer: {
-    flex: 1,
-  },
+  container: commonStyles.container,
+  header: commonStyles.header,
+  headerRow: commonStyles.headerRow,
+  headerTitleContainer: commonStyles.headerTitleContainer,
   photoCount: {
-    ...typography.caption,
+    fontSize: 14,
     color: colors.textSecondary,
   },
 });

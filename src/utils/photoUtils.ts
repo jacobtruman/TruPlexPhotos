@@ -1,10 +1,19 @@
 import { Photo, PhotoGroup } from '../types';
 
+/**
+ * Normalize a date to midnight (00:00:00) of that day
+ * @param date - The date to normalize
+ * @returns A new Date object set to midnight of the given date
+ */
+export const normalizeDate = (date: Date): Date => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 export const formatDate = (date: Date): string => {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = normalizeDate(now);
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  const photoDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const photoDate = normalizeDate(date);
 
   if (photoDate.getTime() === today.getTime()) {
     return 'Today';
@@ -32,7 +41,7 @@ export const groupPhotosByDate = (photos: Photo[]): PhotoGroup[] => {
     if (!groups.has(dateKey)) {
       groups.set(dateKey, {
         title: formatDate(date),
-        date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+        date: normalizeDate(date),
         photos: [],
       });
     }

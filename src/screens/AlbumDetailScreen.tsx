@@ -1,13 +1,14 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, RefreshControl } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { PhotoThumbnail, AlbumCard } from '../components';
-import { colors, spacing, typography } from '../theme';
+import { PhotoThumbnail, AlbumCard, LoadingState } from '../components';
+import { colors, spacing, typography, commonStyles } from '../theme';
 import { RootStackParamList, Photo, Album, photoToSerializable } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { getFolderContents, getFolderItemCount, convertPlexPhotosToPhotos, convertPlexAlbumsToAlbums } from '../services/plexService';
+import { getFolderContents, convertPlexPhotosToPhotos, convertPlexAlbumsToAlbums } from '../services/plexService';
+import { useFolderCounts } from '../hooks/useFolderCounts';
 
 type AlbumDetailRouteProp = RouteProp<RootStackParamList, 'AlbumDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -26,11 +27,14 @@ export const AlbumDetailScreen: React.FC = () => {
   const { selectedServer } = useAuth();
 
   const [folders, setFolders] = useState<Album[]>([]);
-  const [folderCounts, setFolderCounts] = useState<Record<string, number>>({});
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use custom hook to fetch folder counts
+  const serverToken = selectedServer?.accessToken || null;
+  const folderCounts = useFolderCounts(folders, selectedServer, serverToken);
 
   const fetchContents = useCallback(async () => {
     if (!selectedServer || !albumKey) {
@@ -59,22 +63,6 @@ export const AlbumDetailScreen: React.FC = () => {
 
       setFolders(fetchedFolders);
       setPhotos(fetchedPhotos);
-
-      // Fetch item counts for each folder - update UI as each count comes in
-      if (fetchedFolders.length > 0) {
-        // Clear previous counts
-        setFolderCounts({});
-
-        // Fetch counts in parallel, updating state as each completes
-        fetchedFolders.forEach(async (folder) => {
-          if (folder.key) {
-            const count = await getFolderItemCount(selectedServer, serverToken, folder.key);
-            if (count > 0) {
-              setFolderCounts(prev => ({ ...prev, [folder.id]: count }));
-            }
-          }
-        });
-      }
     } catch (err) {
       console.error('Failed to fetch folder contents:', err);
       setError(err instanceof Error ? err.message : 'Failed to load contents');
@@ -144,48 +132,29 @@ export const AlbumDetailScreen: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.title}>{albumTitle}</Text>
-          </View>
-          <View style={styles.backButton} />
-        </View>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading photos...</Text>
-        </View>
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+      </TouchableOpacity>
+      <View style={styles.headerInfo}>
+        <Text style={styles.title}>{albumTitle}</Text>
       </View>
-    );
-  }
+      <View style={styles.backButton} />
+    </View>
+  );
 
-  if (error) {
+  if (loading || error) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.title}>{albumTitle}</Text>
-          </View>
-          <View style={styles.backButton} />
-        </View>
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      </View>
+      <LoadingState
+        loading={loading}
+        error={error}
+        loadingText="Loading photos..."
+        header={renderHeader()}
+      />
     );
   }
 
@@ -232,10 +201,7 @@ export const AlbumDetailScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  container: commonStyles.container,
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,22 +232,6 @@ const styles = StyleSheet.create({
   grid: {
     paddingHorizontal: 2,
     paddingBottom: spacing.xl,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.error,
-    textAlign: 'center',
   },
 });
 

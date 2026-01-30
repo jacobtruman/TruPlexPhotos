@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, FlatList, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AlbumCard, ProfileButton, LibraryDropdown } from '../components';
-import { colors, spacing, typography } from '../theme';
+import { AlbumCard, ProfileButton, LibraryDropdown, LoadingState } from '../components';
+import { colors, spacing, commonStyles } from '../theme';
 import { Album, RootStackParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { getAlbumsFromLibrary, convertPlexAlbumsToAlbums, getFolderItemCount } from '../services/plexService';
+import { getAlbumsFromLibrary, convertPlexAlbumsToAlbums } from '../services/plexService';
+import { useFolderCounts } from '../hooks/useFolderCounts';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -14,10 +15,13 @@ export const AlbumsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { selectedServer, selectedLibrary } = useAuth();
   const [albums, setAlbums] = useState<Album[]>([]);
-  const [folderCounts, setFolderCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use custom hook to fetch folder counts
+  const serverToken = selectedServer?.accessToken || null;
+  const folderCounts = useFolderCounts(albums, selectedServer, serverToken);
 
   const fetchAlbums = useCallback(async () => {
     if (!selectedServer || !selectedLibrary) {
@@ -38,22 +42,6 @@ export const AlbumsScreen: React.FC = () => {
       const plexAlbums = await getAlbumsFromLibrary(selectedServer, serverToken, selectedLibrary.key);
       const fetchedAlbums = convertPlexAlbumsToAlbums(plexAlbums, selectedServer, serverToken);
       setAlbums(fetchedAlbums);
-
-      // Fetch item counts for each folder - update UI as each count comes in
-      if (fetchedAlbums.length > 0) {
-        // Clear previous counts
-        setFolderCounts({});
-
-        // Fetch counts in parallel, updating state as each completes
-        fetchedAlbums.forEach(async (folder) => {
-          if (folder.key) {
-            const count = await getFolderItemCount(selectedServer, serverToken, folder.key);
-            if (count > 0) {
-              setFolderCounts(prev => ({ ...prev, [folder.id]: count }));
-            }
-          }
-        });
-      }
     } catch (err) {
       console.error('Failed to fetch albums:', err);
       setError(err instanceof Error ? err.message : 'Failed to load albums');
@@ -89,37 +77,23 @@ export const AlbumsScreen: React.FC = () => {
     />
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <LibraryDropdown />
-            <ProfileButton />
-          </View>
-        </View>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading folders...</Text>
-        </View>
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerRow}>
+        <LibraryDropdown />
+        <ProfileButton />
       </View>
-    );
-  }
+    </View>
+  );
 
-  if (error) {
+  if (loading || error) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <LibraryDropdown />
-            <ProfileButton />
-          </View>
-        </View>
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.errorHint}>Pull down to retry</Text>
-        </View>
-      </View>
+      <LoadingState
+        loading={loading}
+        error={error}
+        loadingText="Loading folders..."
+        header={renderHeader()}
+      />
     );
   }
 
@@ -135,12 +109,11 @@ export const AlbumsScreen: React.FC = () => {
         </View>
       </View>
       {albums.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyText}>No folders found</Text>
-          <Text style={styles.emptyHint}>
-            This library doesn't have any folders
-          </Text>
-        </View>
+        <LoadingState
+          empty={true}
+          emptyText="No folders found"
+          emptyHint="This library doesn't have any folders"
+        />
       ) : (
         <FlatList
           data={albums}
@@ -164,67 +137,17 @@ export const AlbumsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xl + spacing.md,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.background,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitleContainer: {
-    flex: 1,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.textPrimary,
-  },
+  container: commonStyles.container,
+  header: commonStyles.header,
+  headerRow: commonStyles.headerRow,
+  headerTitleContainer: commonStyles.headerTitleContainer,
   albumCount: {
-    ...typography.caption,
+    fontSize: 14,
     color: colors.textSecondary,
   },
   list: {
     paddingHorizontal: 2,
     paddingBottom: spacing.xl,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.error,
-    textAlign: 'center',
-  },
-  errorHint: {
-    ...typography.small,
-    color: colors.textMuted,
-    marginTop: spacing.sm,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  emptyHint: {
-    ...typography.small,
-    color: colors.textMuted,
-    marginTop: spacing.sm,
-    textAlign: 'center',
   },
 });
 

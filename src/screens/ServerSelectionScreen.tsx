@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { colors, spacing, borderRadius, typography, commonStyles } from '../theme';
+import { FloatingRefreshButton } from '../components';
 import { useAuth } from '../context/AuthContext';
 import { PlexServer } from '../types';
 
@@ -126,43 +127,21 @@ export const ServerSelectionScreen: React.FC = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.refreshFloatingButton} onPress={refreshServers}>
-        <Ionicons name="refresh" size={24} color={colors.textPrimary} />
-      </TouchableOpacity>
+      <FloatingRefreshButton onPress={refreshServers} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.backgroundDark,
-  },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.lg,
-    alignItems: 'center',
-  },
+  container: commonStyles.containerDark,
+  header: commonStyles.headerCentered,
   title: {
-    ...typography.h1,
-    color: colors.textPrimary,
+    ...commonStyles.title,
     marginBottom: spacing.xs,
   },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
+  subtitle: commonStyles.subtitle,
+  loadingContainer: commonStyles.centered,
+  loadingText: commonStyles.loadingText,
   serverList: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -224,15 +203,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: '600',
   },
-  separator: {
-    height: spacing.md,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
+  separator: commonStyles.separator,
+  emptyContainer: commonStyles.centered,
   emptyTitle: {
     ...typography.h3,
     color: colors.textPrimary,
@@ -254,21 +226,5 @@ const styles = StyleSheet.create({
   refreshButtonText: {
     ...typography.body,
     color: colors.primary,
-  },
-  refreshFloatingButton: {
-    position: 'absolute',
-    bottom: spacing.xl,
-    right: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });

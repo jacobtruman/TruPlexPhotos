@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { colors, spacing, borderRadius, typography, commonStyles } from '../theme';
+import { FloatingRefreshButton } from '../components';
 import { useAuth } from '../context/AuthContext';
 import { PlexLibrary } from '../types';
 
@@ -96,33 +97,19 @@ export const LibrarySelectionScreen: React.FC = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.refreshFloatingButton} onPress={refreshLibraries}>
-        <Ionicons name="refresh" size={24} color={colors.textPrimary} />
-      </TouchableOpacity>
+      <FloatingRefreshButton onPress={refreshLibraries} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.backgroundDark,
-  },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.lg,
-    alignItems: 'center',
-  },
+  container: commonStyles.containerDark,
+  header: commonStyles.headerCentered,
   title: {
-    ...typography.h1,
-    color: colors.textPrimary,
+    ...commonStyles.title,
     marginBottom: spacing.xs,
   },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
+  subtitle: commonStyles.subtitle,
   headerButtons: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -141,16 +128,8 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.primary,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
+  loadingContainer: commonStyles.centered,
+  loadingText: commonStyles.loadingText,
   libraryList: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -184,15 +163,8 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
   },
-  separator: {
-    height: spacing.md,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
+  separator: commonStyles.separator,
+  emptyContainer: commonStyles.centered,
   emptyTitle: {
     ...typography.h3,
     color: colors.textPrimary,
@@ -228,22 +200,6 @@ const styles = StyleSheet.create({
   switchProfileButtonText: {
     ...typography.body,
     color: colors.textPrimary,
-  },
-  refreshFloatingButton: {
-    position: 'absolute',
-    bottom: spacing.xl,
-    right: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });
 

@@ -17,7 +17,7 @@ interface PhotoGridProps {
 // Section type for SectionList - each item is a row of photos
 interface PhotoSection {
   title: string;
-  date: string;
+  date: Date;
   data: Photo[][]; // Array of rows, each row is an array of photos
   allPhotos: Photo[]; // Keep reference to all photos for index calculation
 }
