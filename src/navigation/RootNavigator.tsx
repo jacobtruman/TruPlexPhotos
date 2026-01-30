@@ -10,6 +10,7 @@ import {
   ServerSelectionScreen,
   LibrarySelectionScreen,
   ProfileOptionsScreen,
+  AboutScreen,
 } from '../screens';
 import { RootStackParamList } from '../types';
 import { colors } from '../theme';
@@ -56,6 +57,13 @@ export const RootNavigator: React.FC = () => {
             options={{
               animation: 'slide_from_bottom',
               presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen

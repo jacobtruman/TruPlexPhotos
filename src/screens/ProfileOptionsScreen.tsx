@@ -69,6 +69,10 @@ export const ProfileOptionsScreen: React.FC = () => {
     await logout();
   };
 
+  const handleAbout = () => {
+    navigation.navigate('About');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -111,6 +115,15 @@ export const ProfileOptionsScreen: React.FC = () => {
             title="Change Server"
             subtitle={selectedServer?.name}
             onPress={handleChangeServer}
+          />
+        </View>
+
+        <View style={[styles.section, styles.sectionMargin]}>
+          <OptionItem
+            icon="information-circle-outline"
+            title="About"
+            subtitle="App info and version"
+            onPress={handleAbout}
           />
         </View>
 
@@ -181,6 +194,14 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
     marginTop: spacing.xs,
+  },
+  sectionTitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   section: {
     backgroundColor: colors.surface,

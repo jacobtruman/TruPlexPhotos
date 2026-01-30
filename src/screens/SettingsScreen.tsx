@@ -7,12 +7,10 @@ import {
   TouchableOpacity,
   Switch,
   Image,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import { getVersionString } from '../constants/version';
 
 interface SettingItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -160,20 +158,7 @@ export const SettingsScreen: React.FC = () => {
           />
         </View>
 
-        {/* About */}
-        <Text style={styles.sectionTitle}>About</Text>
-        <View style={styles.section}>
-          <SettingItem
-            icon="information-circle-outline"
-            title="Version"
-            subtitle={getVersionString(Platform.OS as 'ios' | 'android')}
-          />
-          <SettingItem
-            icon="document-text-outline"
-            title="Privacy Policy"
-            onPress={() => {}}
-          />
-        </View>
+
       </ScrollView>
     </View>
   );

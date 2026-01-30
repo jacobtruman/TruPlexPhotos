@@ -184,6 +184,7 @@ export type RootStackParamList = {
   ServerSelection: undefined;
   LibrarySelection: undefined;
   ProfileOptions: undefined;
+  About: undefined;
   PhotoViewer: { photo: SerializablePhoto; photos: SerializablePhoto[]; initialIndex: number };
   AlbumDetail: {
     albumId: string;

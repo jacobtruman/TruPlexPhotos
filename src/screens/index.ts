@@ -8,3 +8,4 @@ export { ProfileSelectionScreen } from './ProfileSelectionScreen';
 export { ServerSelectionScreen } from './ServerSelectionScreen';
 export { LibrarySelectionScreen } from './LibrarySelectionScreen';
 export { ProfileOptionsScreen } from './ProfileOptionsScreen';
+export { AboutScreen } from './AboutScreen';
