@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   Switch,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import { getVersionString } from '../constants/version';
 
 interface SettingItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -164,7 +166,7 @@ export const SettingsScreen: React.FC = () => {
           <SettingItem
             icon="information-circle-outline"
             title="Version"
-            subtitle="1.0.0"
+            subtitle={getVersionString(Platform.OS as 'ios' | 'android')}
           />
           <SettingItem
             icon="document-text-outline"

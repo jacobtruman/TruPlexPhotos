@@ -13,7 +13,8 @@
       "backgroundColor": "#1F1F1F"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,8 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "backgroundColor": "#1F1F1F",
-      "package": "com.anonymous.TruPlexPhotos"
+      "package": "com.anonymous.TruPlexPhotos",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"

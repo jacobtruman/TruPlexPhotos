@@ -133,6 +133,27 @@ TruPlexPhotos/
 
 ## 📦 Building for Production
 
+### Version Management
+
+This project uses **Semantic Versioning (SemVer)** with automated build number tracking.
+
+**Bump version before building:**
+
+```bash
+# Bug fixes (1.0.0 -> 1.0.1)
+npm run version:patch
+
+# New features (1.0.0 -> 1.1.0)
+npm run version:minor
+
+# Breaking changes (1.0.0 -> 2.0.0)
+npm run version:major
+```
+
+This automatically updates `package.json`, `app.json`, and increments build numbers.
+
+See [VERSIONING.md](docs/VERSIONING.md) for detailed versioning guide.
+
 ### Build APK with EAS Build
 
 1. **Install EAS CLI**
@@ -147,12 +168,14 @@ TruPlexPhotos/
 
 3. **Build for Android**
    ```bash
-   eas build --platform android --profile preview
+   npm run build:android
+   # or: eas build --platform android --profile preview
    ```
 
 4. **Build for iOS**
    ```bash
-   eas build --platform ios --profile preview
+   npm run build:ios
+   # or: eas build --platform ios --profile preview
    ```
 
 The build will be processed on Expo's servers and you'll receive a download link when complete.
