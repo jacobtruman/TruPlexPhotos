@@ -71,7 +71,6 @@ export async function testServerConnection(
   const urisToTry = server.connectionUris || [];
 
   if (urisToTry.length === 0) {
-    console.log(`Plex: Server "${server.name}" has no connection URIs`);
     return false;
   }
 
@@ -87,21 +86,17 @@ export async function testServerConnection(
       }, timeoutMs);
 
       if (response.ok) {
-        console.log(`Plex: Server "${server.name}" is accessible via ${baseUrl}`);
         return true;
       }
       // 401 means the server is reachable but token is invalid for this profile
       if (response.status === 401) {
-        console.log(`Plex: Server "${server.name}" returned 401 (unauthorized) from ${baseUrl}`);
         // Continue trying other URIs
       }
     } catch (error) {
       // Connection failed, try next URI
-      console.log(`Plex: Server "${server.name}" not reachable via ${baseUrl}`);
     }
   }
 
-  console.log(`Plex: Server "${server.name}" is not accessible (all ${urisToTry.length} URIs failed)`);
   return false;
 }
 
@@ -109,8 +104,6 @@ export async function testServerConnection(
 export async function filterAccessibleServers(
   servers: PlexServer[]
 ): Promise<PlexServer[]> {
-  console.log(`Plex: Testing connectivity for ${servers.length} server(s)...`);
-
   // Test all servers in parallel for speed
   const results = await Promise.all(
     servers.map(async (server) => ({
@@ -123,7 +116,6 @@ export async function filterAccessibleServers(
     .filter(({ accessible }) => accessible)
     .map(({ server }) => server);
 
-  console.log(`Plex: ${accessibleServers.length} of ${servers.length} server(s) are accessible`);
   return accessibleServers;
 }
 
@@ -171,10 +163,6 @@ async function fetchWithFallback(
     urisToTry = [fallbackUrl];
   }
 
-  if (!silent) {
-    console.log(`Plex: Will try ${urisToTry.length} connection(s):`, urisToTry);
-  }
-
   let lastError: Error | null = null;
 
   // Build query string - handle paths that already have query params
@@ -187,9 +175,6 @@ async function fetchWithFallback(
 
   for (const baseUrl of urisToTry) {
     const url = `${baseUrl}${path}${separator}${queryString}`;
-    if (!silent) {
-      console.log(`Plex: Trying ${baseUrl}...`);
-    }
 
     try {
       const response = await fetchWithTimeout(url, {
@@ -200,21 +185,11 @@ async function fetchWithFallback(
       if (response.ok) {
         // Remember this working URL for future requests
         workingServerUrl = baseUrl;
-        if (!silent) {
-          console.log(`Plex: Successfully connected to ${baseUrl}`);
-        }
         return response;
       }
 
-      if (!silent) {
-        console.log(`Plex: HTTP ${response.status} from ${baseUrl}`);
-      }
       lastError = new Error(`HTTP ${response.status}`);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      if (!silent) {
-        console.log(`Plex: Failed to connect to ${baseUrl}: ${errorMsg}`);
-      }
       lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -228,13 +203,9 @@ export async function getPhotoLibraries(
   token: string
 ): Promise<PlexLibrary[]> {
   try {
-    console.log('Plex API: Fetching libraries from server:', server.name);
-    console.log('Plex API: Using token:', token ? `${token.substring(0, 10)}...` : 'NO TOKEN');
     const response = await fetchWithFallback(server, '/library/sections', token);
     const data = await response.json();
     const directories = data.MediaContainer?.Directory || [];
-
-    console.log('Plex API: Raw directories from server:', JSON.stringify(directories.map((d: any) => ({ key: d.key, title: d.title, type: d.type })), null, 2));
 
     // Filter to only photo libraries (type = 'photo')
     const photoLibraries = directories
@@ -248,7 +219,6 @@ export async function getPhotoLibraries(
         thumb: dir.thumb,
       }));
 
-    console.log('Plex API: Filtered photo libraries:', photoLibraries.map((l: PlexLibrary) => l.title));
     return photoLibraries;
   } catch (error) {
     console.error('Error fetching photo libraries:', error);
@@ -285,7 +255,6 @@ async function getPhotosRecursively(
   maxDepth: number = 10
 ): Promise<PlexPhotoItem[]> {
   if (depth > maxDepth) {
-    console.log(`Plex: Max depth ${maxDepth} reached, stopping recursion`);
     return [];
   }
 
@@ -332,8 +301,6 @@ export async function getPhotosFromLibrary(
   limit: number = 1000
 ): Promise<PhotosResult> {
   try {
-    console.log(`Plex: getPhotosFromLibrary called with start=${start}, limit=${limit}`);
-
     // Fetch photos using server-side pagination with clusterZoomLevel
     // This returns photos already sorted by Plex (newest first)
     const photosResponse = await fetchWithFallback(
@@ -351,16 +318,6 @@ export async function getPhotosFromLibrary(
     const photosData = await photosResponse.json();
     const photos = photosData.MediaContainer?.Metadata || [];
     const totalSize = photosData.MediaContainer?.totalSize || photos.length;
-
-    console.log(`Plex: Fetched ${photos.length} photos (${start} to ${start + photos.length}) of ${totalSize} total`);
-
-    // Debug: log first photo on initial fetch to see available fields
-    if (start === 0 && photos.length > 0) {
-      const sample = photos[0];
-      console.log(`\n\n========== PHOTO DEBUG ==========`);
-      console.log(`All fields: ${JSON.stringify(sample, null, 2)}`);
-      console.log(`=================================\n\n`);
-    }
 
     // Check if there are more photos to load
     const hasMore = start + photos.length < totalSize;
@@ -414,15 +371,10 @@ export async function getEnrichedPhotoMetadata(
   token: string,
   ratingKey: string
 ): Promise<EnrichedPhotoMetadata | null> {
-  console.log(`Plex: Fetching enriched metadata for photo ${ratingKey}...`);
   const metadata = await getPhotoMetadata(server, token, ratingKey);
   if (!metadata) {
-    console.log(`Plex: No metadata returned for photo ${ratingKey}`);
     return null;
   }
-
-  console.log(`Plex: DEBUG - Metadata keys:`, Object.keys(metadata));
-  console.log(`Plex: DEBUG - Media array:`, JSON.stringify(metadata.Media, null, 2));
 
   const media = metadata.Media?.[0];
   const part = media?.Part?.[0];
@@ -437,7 +389,6 @@ export async function getEnrichedPhotoMetadata(
     aspectRatio: media?.aspectRatio,
   };
 
-  console.log(`Plex: DEBUG - Enriched result:`, result);
   return result;
 }
 
@@ -454,7 +405,6 @@ export async function getAlbumsFromLibrary(
 ): Promise<PlexAlbum[]> {
   try {
     // Use /library/sections/{sectionId}/all to get folders with full metadata including ratingKey
-    console.log(`Plex: Fetching folders from library section ${libraryKey}...`);
     const response = await fetchWithFallback(
       server,
       `/library/sections/${libraryKey}/all`,
@@ -463,18 +413,10 @@ export async function getAlbumsFromLibrary(
     const data = await response.json();
     const allItems = data.MediaContainer?.Metadata || [];
 
-    console.log(`Plex: /all endpoint returned ${allItems.length} items`);
-    if (allItems.length > 0) {
-      console.log(`Plex: Item types found:`, [...new Set(allItems.map((item: any) => item.type))]);
-      console.log(`Plex: First item keys:`, Object.keys(allItems[0]).join(', '));
-      console.log(`Plex: First item UltraBlurColors:`, JSON.stringify(allItems[0].UltraBlurColors, null, 2));
-    }
-
     // Filter for folders - items with /children in their key
     const folders = allItems.filter((item: any) =>
       item.key && item.key.includes('/children')
     );
-    console.log(`Plex: Found ${folders.length} folders in library`);
 
     return folders;
   } catch (error) {
@@ -559,8 +501,6 @@ export async function getFolderContents(
   folderKeyOrRatingKey: string
 ): Promise<FolderContents> {
   try {
-    console.log(`Plex: Fetching contents from: ${folderKeyOrRatingKey}`);
-
     let items = [];
 
     // Check if this is a numeric ratingKey or a path-based key
@@ -568,7 +508,6 @@ export async function getFolderContents(
 
     if (isRatingKey) {
       // Use /library/metadata/{ratingKey}/children to get full metadata
-      console.log(`Plex: Fetching children of ratingKey ${folderKeyOrRatingKey} with full metadata...`);
       const metadataResponse = await fetchWithFallback(
         server,
         `/library/metadata/${folderKeyOrRatingKey}/children`,
@@ -577,10 +516,8 @@ export async function getFolderContents(
       );
       const metadataData = await metadataResponse.json();
       items = metadataData.MediaContainer?.Metadata || [];
-      console.log(`Plex: Got ${items.length} items with full metadata`);
     } else {
       // Use the path-based key directly
-      console.log(`Plex: Using path-based key...`);
       const response = await fetchWithFallback(
         server,
         folderKeyOrRatingKey,
@@ -607,8 +544,6 @@ export async function getFolderContents(
         photos.push(item);
       }
     }
-
-    console.log(`Plex: Found ${folders.length} subfolders and ${photos.length} photos/videos`);
 
     return { folders, photos };
   } catch (error) {
@@ -713,21 +648,15 @@ export async function getAllPhotos(
   server: PlexServer,
   token: string
 ): Promise<Photo[]> {
-  console.log('Plex: Fetching photo libraries...');
   const libraries = await getPhotoLibraries(server, token);
-  console.log(`Plex: Found ${libraries.length} photo libraries:`, libraries.map(l => l.title));
 
   const allPhotos: Photo[] = [];
 
   for (const library of libraries) {
-    console.log(`Plex: Fetching photos from library "${library.title}" (key: ${library.key})...`);
     const result = await getPhotosFromLibrary(server, token, library.key);
-    console.log(`Plex: Found ${result.photos.length} photos in "${library.title}"`);
     const photos = convertPlexPhotosToPhotos(result.photos, server, token);
     allPhotos.push(...photos);
   }
-
-  console.log(`Plex: Total photos found: ${allPhotos.length}`);
 
   // Sort by date, newest first
   allPhotos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -743,9 +672,6 @@ export async function ratePhoto(
   rating: number
 ): Promise<boolean> {
   try {
-    console.log(`Plex: Rating photo ${ratingKey} with rating ${rating}`);
-    console.log(`Plex: Using token: ${token ? `${token.substring(0, 10)}...` : 'NO TOKEN'}`);
-
     // The Plex API expects the ratingKey as the key parameter
     const response = await fetchWithFallback(
       server,
@@ -760,7 +686,6 @@ export async function ratePhoto(
         method: 'PUT',
       }
     );
-    console.log(`Plex: Rating response status: ${response.status}`);
     return response.ok;
   } catch (error) {
     console.error('Error rating photo:', error);

@@ -19,7 +19,6 @@ export const LibrarySelectionScreen: React.FC = () => {
 
   // Refresh libraries when the screen mounts to ensure we have the latest data
   useEffect(() => {
-    console.log('LibrarySelectionScreen: Refreshing libraries on mount...');
     refreshLibraries();
   }, [refreshLibraries]);
 

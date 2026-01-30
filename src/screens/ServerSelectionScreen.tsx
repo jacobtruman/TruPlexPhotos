@@ -20,11 +20,9 @@ export const ServerSelectionScreen: React.FC = () => {
   const [selectingServerId, setSelectingServerId] = useState<string | null>(null);
 
   const handleSelectServer = async (server: PlexServer) => {
-    console.log(`ServerSelectionScreen: User tapped server "${server.name}" (${server.machineIdentifier})`);
     setSelectingServerId(server.machineIdentifier);
     try {
       await selectServer(server);
-      console.log(`ServerSelectionScreen: Server "${server.name}" selected successfully`);
     } catch (error) {
       console.error(`ServerSelectionScreen: Failed to select server "${server.name}":`, error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -48,21 +48,15 @@ export const AlbumDetailScreen: React.FC = () => {
 
     try {
       setError(null);
-      console.log(`Plex: Fetching contents from folder "${album.title}" (ratingKey: ${album.ratingKey})...`);
       // Use ratingKey if available, otherwise fall back to key
       const contents = await getFolderContents(selectedServer, serverToken, album.ratingKey || album.key);
 
       const fetchedFolders = convertPlexAlbumsToAlbums(contents.folders, selectedServer, serverToken);
       const fetchedPhotos = convertPlexPhotosToPhotos(contents.photos, selectedServer, serverToken);
 
-      // DON'T sort folders - keep them in the order Plex returns them
-      // Plex should already be returning them sorted by titleSort
-      console.log(`Plex: Folder order from Plex:`, fetchedFolders.map(f => f.title).join(', '));
-
       // Sort photos by date (newest first)
       fetchedPhotos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-      console.log(`Plex: Loaded ${fetchedFolders.length} folders and ${fetchedPhotos.length} photos from "${album.title}"`);
       setFolders(fetchedFolders);
       setPhotos(fetchedPhotos);
 

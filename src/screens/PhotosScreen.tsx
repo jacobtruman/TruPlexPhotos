@@ -47,21 +47,8 @@ export const PhotosScreen: React.FC = () => {
 
     try {
       setError(null);
-      console.log(`Plex: Fetching photos from library "${selectedLibrary.title}"...`);
       const result = await getPhotosFromLibrary(selectedServer, serverToken, selectedLibrary.key, 0, PAGE_SIZE);
       const fetchedPhotos = convertPlexPhotosToPhotos(result.photos, selectedServer, serverToken);
-
-      // Photos are already sorted by Plex (newest first)
-      console.log(`Plex: Loaded ${fetchedPhotos.length} photos from "${selectedLibrary.title}" (total: ${result.totalSize})`);
-
-      // Debug: log first 3 photos
-      if (fetchedPhotos.length > 0) {
-        console.log(`\n========== FIRST 3 PHOTOS ==========`);
-        fetchedPhotos.slice(0, 3).forEach((p, i) => {
-          console.log(`${i}: ${p.title || p.filename} - ${p.createdAt.toISOString()}`);
-        });
-        console.log(`====================================\n`);
-      }
 
       setPhotos(fetchedPhotos);
       setHasMore(result.hasMore);
@@ -84,17 +71,9 @@ export const PhotosScreen: React.FC = () => {
     setLoadingMore(true);
     try {
       const start = photos.length;
-      console.log(`Plex: Loading more photos from ${start}...`);
       const result = await getPhotosFromLibrary(selectedServer, serverToken, selectedLibrary.key, start, PAGE_SIZE);
       const newPhotos = convertPlexPhotosToPhotos(result.photos, selectedServer, serverToken);
-      // Don't sort here - photos are already sorted by the service
-      console.log(`Plex: Loaded ${newPhotos.length} more photos`);
-      console.log(`Plex: Before append - photos.length = ${photos.length}`);
-      setPhotos(prev => {
-        const updated = [...prev, ...newPhotos];
-        console.log(`Plex: After append - photos.length = ${updated.length}`);
-        return updated;
-      });
+      setPhotos(prev => [...prev, ...newPhotos]);
       setHasMore(result.hasMore);
     } catch (err) {
       console.error('Failed to load more photos:', err);
@@ -110,10 +89,7 @@ export const PhotosScreen: React.FC = () => {
   // Memoize photoGroups to prevent unnecessary recalculations
   // This helps maintain scroll position when loading more photos
   const photoGroups = useMemo(() => {
-    console.log(`Plex: Recalculating photoGroups with ${photos.length} photos`);
-    const groups = groupPhotosByDate(photos);
-    console.log(`Plex: Created ${groups.length} photo groups`);
-    return groups;
+    return groupPhotosByDate(photos);
   }, [photos]);
 
   const handlePhotoPress = useCallback(

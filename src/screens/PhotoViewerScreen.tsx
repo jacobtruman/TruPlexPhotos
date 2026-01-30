@@ -64,8 +64,6 @@ export const PhotoViewerScreen: React.FC = () => {
 
     if (!selectedServer?.accessToken) return;
 
-    console.log(`PhotoViewer: Fetching metadata for photo id=${currentPhoto.id}, filename=${currentPhoto.filename}, fullUri=${currentPhoto.fullUri?.substring(0, 100)}`);
-
     setLoadingMetadata(true);
     try {
       const metadata = await getEnrichedPhotoMetadata(

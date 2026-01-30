@@ -23,7 +23,6 @@ export const TabNavigator: React.FC = () => {
             const tabName = currentRoute?.name as keyof RootTabParamList;
             if (tabName && (tabName === 'Timeline' || tabName === 'Library')) {
               if (tabName !== selectedTab) {
-                console.log(`Plex: Tab changed to "${tabName}"`);
                 setSelectedTab(tabName);
               }
             }

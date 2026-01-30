@@ -35,13 +35,8 @@ export const AlbumsScreen: React.FC = () => {
 
     try {
       setError(null);
-      console.log(`Plex: Fetching albums from library "${selectedLibrary.title}"...`);
       const plexAlbums = await getAlbumsFromLibrary(selectedServer, serverToken, selectedLibrary.key);
       const fetchedAlbums = convertPlexAlbumsToAlbums(plexAlbums, selectedServer, serverToken);
-      // DON'T sort albums - keep them in the order Plex returns them
-      // Plex should already be returning them sorted by titleSort
-      console.log(`Plex: Album order from Plex:`, fetchedAlbums.map(a => a.title).join(', '));
-      console.log(`Plex: Loaded ${fetchedAlbums.length} albums from "${selectedLibrary.title}"`);
       setAlbums(fetchedAlbums);
 
       // Fetch item counts for each folder - update UI as each count comes in

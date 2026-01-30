@@ -55,7 +55,6 @@ async function getPlexHeaders(authToken?: string | null): Promise<Record<string,
 // Create a new PIN for authentication
 export async function createPin(): Promise<PlexPin> {
   const headers = await getPlexHeaders();
-  console.log('Plex Auth: Creating PIN with headers:', JSON.stringify(headers, null, 2));
 
   const response = await fetch(`${PLEX_API_BASE}/pins?strong=true`, {
     method: 'POST',
@@ -69,7 +68,6 @@ export async function createPin(): Promise<PlexPin> {
   }
 
   const pin = await response.json();
-  console.log('Plex Auth: PIN created successfully:', JSON.stringify(pin, null, 2));
   return pin;
 }
 
@@ -99,10 +97,6 @@ export async function openPlexAuth(pinCode: string): Promise<WebBrowser.WebBrows
   });
 
   const authUrl = `https://app.plex.tv/auth#?${params.toString()}`;
-
-  console.log('Plex Auth: Opening browser with URL:', authUrl);
-  console.log('Plex Auth: Client ID:', clientId);
-  console.log('Plex Auth: PIN Code:', pinCode);
 
   return WebBrowser.openBrowserAsync(authUrl);
 }

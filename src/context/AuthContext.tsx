@@ -85,9 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const serverKey = selectedProfile
           ? `${STORAGE_KEYS.SELECTED_SERVER}_${selectedProfile.id}`
           : STORAGE_KEYS.SELECTED_SERVER;
-        console.log(`Plex: Loading server from key: ${serverKey}`);
         const serverJson = await SecureStore.getItemAsync(serverKey);
-        console.log(`Plex: Saved server JSON: ${serverJson ? 'found' : 'not found'}`);
         const savedServer: PlexServer | null = serverJson ? JSON.parse(serverJson) : null;
 
         // Load profile-specific library selection
@@ -112,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (savedServer) {
           // Find the fresh server that matches the saved server ID
           actualServer = servers.find(s => s.machineIdentifier === savedServer.machineIdentifier) || null;
-          console.log(`Plex: Restored saved server "${savedServer.name}", found fresh data: ${actualServer ? 'yes' : 'no'}`);
         }
         // Don't auto-select a server if none was saved - let user choose
 
@@ -131,7 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let actualLibrary: PlexLibrary | null = null;
         if (savedLibrary && libraries.length > 0) {
           actualLibrary = libraries.find(l => l.key === savedLibrary.key) || null;
-          console.log(`Plex: Restored saved library "${savedLibrary.title}", found: ${actualLibrary ? 'yes' : 'no'}`);
         }
 
         // Load profile-specific tab selection
@@ -238,25 +234,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Re-fetch resources with the new profile token to get updated server access tokens
       // This is important because each profile may have different server access permissions
-      console.log('Plex: Re-fetching resources for new profile...');
       const resources = await getResources(newToken).catch(() => []);
       const allServers = resources.map(resourceToServer).filter((s): s is PlexServer => s !== null);
       // Filter to only accessible servers
       const servers = await filterAccessibleServers(allServers);
-      console.log(`Plex: Found ${servers.length} accessible servers for profile "${profile.title}"`);
 
       // Load this profile's saved server selection
       const serverKey = `${STORAGE_KEYS.SELECTED_SERVER}_${profile.id}`;
-      console.log(`Plex: Loading server from key: ${serverKey}`);
       const savedServerJson = await SecureStore.getItemAsync(serverKey);
-      console.log(`Plex: Saved server JSON: ${savedServerJson ? 'found' : 'not found'}`);
       let selectedServer: PlexServer | null = null;
 
       if (savedServerJson) {
         const savedServer: PlexServer = JSON.parse(savedServerJson);
         // Find the fresh server that matches the saved server ID (with updated accessToken)
         selectedServer = servers.find(s => s.machineIdentifier === savedServer.machineIdentifier) || null;
-        console.log(`Plex: Restored saved server "${savedServer.name}" for profile "${profile.title}", found fresh data: ${selectedServer ? 'yes' : 'no'}`);
       }
 
       // Fetch libraries if we have a server
@@ -278,7 +269,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const savedLibrary: PlexLibrary = JSON.parse(savedLibraryJson);
         // Find the library that matches the saved library key
         selectedLibrary = libraries.find(l => l.key === savedLibrary.key) || null;
-        console.log(`Plex: Restored saved library "${savedLibrary.title}" for profile "${profile.title}", found: ${selectedLibrary ? 'yes' : 'no'}`);
       }
 
       // Load this profile's saved tab selection
@@ -312,7 +302,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const serverKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_SERVER}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_SERVER;
-    console.log(`Plex: Saving server "${server.name}" with key: ${serverKey}`);
     await SecureStore.setItemAsync(serverKey, JSON.stringify(server));
     // Clear library when server changes
     await SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_LIBRARY);
@@ -325,7 +314,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const libraryKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_LIBRARY;
-    console.log(`Plex: Saving library "${library.title}" with key: ${libraryKey}`);
     await SecureStore.setItemAsync(libraryKey, JSON.stringify(library));
     setState(prev => ({ ...prev, selectedLibrary: library }));
   }, [state.selectedProfile]);
@@ -371,10 +359,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!state.selectedServer) return;
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      console.log('Plex: Refreshing libraries from server...');
       // Use the server's accessToken which is scoped to the current profile's permissions
       const libraries = await getPhotoLibraries(state.selectedServer, state.selectedServer.accessToken);
-      console.log(`Plex: Found ${libraries.length} libraries:`, libraries.map(l => l.title));
       setState(prev => ({ ...prev, libraries, isLoading: false }));
     } catch (error) {
       console.error('Failed to refresh libraries:', error);
@@ -387,7 +373,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tabKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_TAB}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_TAB;
-    console.log(`Plex: Saving selected tab "${tab}" with key: ${tabKey}`);
     await SecureStore.setItemAsync(tabKey, tab);
     setState(prev => ({ ...prev, selectedTab: tab }));
   }, [state.selectedProfile]);

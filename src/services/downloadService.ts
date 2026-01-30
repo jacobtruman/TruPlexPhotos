@@ -34,7 +34,6 @@ export const requestMediaLibraryPermissions = async (): Promise<boolean> => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     return status === 'granted';
   } catch (error) {
-    console.log('Permission request error, will try to save anyway:', error);
     // Return true to attempt the save - it may still work or prompt the user
     return true;
   }
@@ -72,8 +71,6 @@ export const downloadPhoto = async (
 
     // Use fullUri for full resolution, fall back to uri (thumbnail) if not available
     const downloadUrl = photo.fullUri || photo.uri;
-
-    console.log(`Downloading from: ${downloadUrl.substring(0, 100)}...`);
 
     // Download the file using the new static method
     // Type assertion needed to resolve conflict between expo-file-system File and DOM File
