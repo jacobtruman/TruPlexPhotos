@@ -73,7 +73,12 @@ export const AlbumsScreen: React.FC = () => {
   }, [fetchAlbums]);
 
   const handleAlbumPress = (album: Album) => {
-    navigation.navigate('AlbumDetail', { album });
+    navigation.navigate('AlbumDetail', {
+      albumId: album.id,
+      albumKey: album.key,
+      albumRatingKey: album.ratingKey,
+      albumTitle: album.title,
+    });
   };
 
   const renderAlbum = ({ item }: { item: Album }) => (

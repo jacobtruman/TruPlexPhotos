@@ -171,6 +171,12 @@ export type RootTabParamList = {
   Library: undefined;
 };
 
+// Serializable version of Photo for navigation params (Date -> string)
+export interface SerializablePhoto extends Omit<Photo, 'createdAt' | 'modifiedAt'> {
+  createdAt: string; // ISO string
+  modifiedAt?: string; // ISO string
+}
+
 export type RootStackParamList = {
   Main: undefined;
   Login: undefined;
@@ -178,7 +184,30 @@ export type RootStackParamList = {
   ServerSelection: undefined;
   LibrarySelection: undefined;
   ProfileOptions: undefined;
-  PhotoViewer: { photo: Photo; photos: Photo[]; initialIndex: number };
-  AlbumDetail: { album: Album };
+  PhotoViewer: { photo: SerializablePhoto; photos: SerializablePhoto[]; initialIndex: number };
+  AlbumDetail: {
+    albumId: string;
+    albumKey?: string;
+    albumRatingKey?: string;
+    albumTitle: string;
+  };
 };
+
+
+// Helper functions to convert between Photo and SerializablePhoto
+export function photoToSerializable(photo: Photo): SerializablePhoto {
+  return {
+    ...photo,
+    createdAt: photo.createdAt.toISOString(),
+    modifiedAt: photo.modifiedAt?.toISOString(),
+  };
+}
+
+export function serializableToPhoto(serializable: SerializablePhoto): Photo {
+  return {
+    ...serializable,
+    createdAt: new Date(serializable.createdAt),
+    modifiedAt: serializable.modifiedAt ? new Date(serializable.modifiedAt) : undefined,
+  };
+}
 

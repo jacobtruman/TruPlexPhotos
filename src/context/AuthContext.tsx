@@ -22,7 +22,6 @@ import { getPhotoLibraries, filterAccessibleServers } from '../services/plexServ
 
 const STORAGE_KEYS = {
   AUTH_TOKEN: 'plex_auth_token',
-  USER: 'plex_user',
   SELECTED_PROFILE: 'plex_selected_profile',
   SELECTED_SERVER: 'plex_selected_server',
   SELECTED_LIBRARY: 'plex_selected_library',
@@ -70,23 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadSavedAuth = async () => {
     try {
-      const [authToken, userJson, profileJson, clientId] = await Promise.all([
+      const [authToken, profileJson, clientId] = await Promise.all([
         SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN),
-        SecureStore.getItemAsync(STORAGE_KEYS.USER),
         SecureStore.getItemAsync(STORAGE_KEYS.SELECTED_PROFILE),
         getClientIdentifier(),
       ]);
 
-      if (authToken && userJson) {
-        const user: PlexUser = JSON.parse(userJson);
+      if (authToken) {
         const selectedProfile: PlexProfile | null = profileJson ? JSON.parse(profileJson) : null;
+
+        // Fetch fresh user data (not stored to avoid SecureStore size limits)
+        const user = await getUser(authToken).catch(() => null);
 
         // Load profile-specific server selection
         const serverKey = selectedProfile
           ? `${STORAGE_KEYS.SELECTED_SERVER}_${selectedProfile.id}`
           : STORAGE_KEYS.SELECTED_SERVER;
-        const serverJson = await SecureStore.getItemAsync(serverKey);
-        const savedServer: PlexServer | null = serverJson ? JSON.parse(serverJson) : null;
+        const savedServerId = await SecureStore.getItemAsync(serverKey);
 
         // Load profile-specific library selection
         const libraryKey = selectedProfile
@@ -105,11 +104,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Filter to only accessible servers
         const servers = await filterAccessibleServers(allServers);
 
-        // If we have a saved server, find the matching fresh server data (with updated accessToken)
+        // If we have a saved server ID, find the matching fresh server data (with updated accessToken)
         let actualServer: PlexServer | null = null;
-        if (savedServer) {
+        if (savedServerId) {
           // Find the fresh server that matches the saved server ID
-          actualServer = servers.find(s => s.machineIdentifier === savedServer.machineIdentifier) || null;
+          actualServer = servers.find(s => s.machineIdentifier === savedServerId) || null;
         }
         // Don't auto-select a server if none was saved - let user choose
 
@@ -185,11 +184,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Filter to only accessible servers
           const servers = await filterAccessibleServers(allServers);
 
-          // Save to secure storage
-          await Promise.all([
-            SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, pinStatus.authToken),
-            SecureStore.setItemAsync(STORAGE_KEYS.USER, JSON.stringify(user)),
-          ]);
+          // Save to secure storage (only auth token, user object is not used)
+          await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, pinStatus.authToken);
 
           setState(prev => ({
             ...prev,
@@ -215,7 +211,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await Promise.all([
       SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.USER),
       SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_PROFILE),
       SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_SERVER),
       SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_LIBRARY),
@@ -241,13 +236,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Load this profile's saved server selection
       const serverKey = `${STORAGE_KEYS.SELECTED_SERVER}_${profile.id}`;
-      const savedServerJson = await SecureStore.getItemAsync(serverKey);
+      const savedServerId = await SecureStore.getItemAsync(serverKey);
       let selectedServer: PlexServer | null = null;
 
-      if (savedServerJson) {
-        const savedServer: PlexServer = JSON.parse(savedServerJson);
+      if (savedServerId) {
         // Find the fresh server that matches the saved server ID (with updated accessToken)
-        selectedServer = servers.find(s => s.machineIdentifier === savedServer.machineIdentifier) || null;
+        selectedServer = servers.find(s => s.machineIdentifier === savedServerId) || null;
       }
 
       // Fetch libraries if we have a server
@@ -299,10 +293,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const libraries = await getPhotoLibraries(server, server.accessToken);
 
     // Only save server selection after successful connection
+    // Store only the machineIdentifier to avoid SecureStore size limits
     const serverKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_SERVER}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_SERVER;
-    await SecureStore.setItemAsync(serverKey, JSON.stringify(server));
+    await SecureStore.setItemAsync(serverKey, server.machineIdentifier);
     // Clear library when server changes
     await SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_LIBRARY);
 

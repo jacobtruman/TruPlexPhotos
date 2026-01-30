@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { PhotoThumbnail, AlbumCard } from '../components';
 import { colors, spacing, typography } from '../theme';
-import { RootStackParamList, Photo, Album } from '../types';
+import { RootStackParamList, Photo, Album, photoToSerializable } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { getFolderContents, getFolderItemCount, convertPlexPhotosToPhotos, convertPlexAlbumsToAlbums } from '../services/plexService';
 
@@ -22,7 +22,7 @@ type ListItem = { type: 'folder'; data: Album } | { type: 'photo'; data: Photo }
 export const AlbumDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AlbumDetailRouteProp>();
-  const { album } = route.params;
+  const { albumId, albumKey, albumRatingKey, albumTitle } = route.params;
   const { selectedServer } = useAuth();
 
   const [folders, setFolders] = useState<Album[]>([]);
@@ -33,7 +33,7 @@ export const AlbumDetailScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchContents = useCallback(async () => {
-    if (!selectedServer || !album.key) {
+    if (!selectedServer || !albumKey) {
       setLoading(false);
       setError('Unable to load folder contents');
       return;
@@ -49,7 +49,7 @@ export const AlbumDetailScreen: React.FC = () => {
     try {
       setError(null);
       // Use ratingKey if available, otherwise fall back to key
-      const contents = await getFolderContents(selectedServer, serverToken, album.ratingKey || album.key);
+      const contents = await getFolderContents(selectedServer, serverToken, albumRatingKey || albumKey);
 
       const fetchedFolders = convertPlexAlbumsToAlbums(contents.folders, selectedServer, serverToken);
       const fetchedPhotos = convertPlexPhotosToPhotos(contents.photos, selectedServer, serverToken);
@@ -82,7 +82,7 @@ export const AlbumDetailScreen: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedServer, album]);
+  }, [selectedServer, albumKey, albumRatingKey]);
 
   useEffect(() => {
     fetchContents();
@@ -95,7 +95,12 @@ export const AlbumDetailScreen: React.FC = () => {
 
   const handleFolderPress = useCallback(
     (folder: Album) => {
-      navigation.push('AlbumDetail', { album: folder });
+      navigation.push('AlbumDetail', {
+        albumId: folder.id,
+        albumKey: folder.key,
+        albumRatingKey: folder.ratingKey,
+        albumTitle: folder.title,
+      });
     },
     [navigation]
   );
@@ -103,8 +108,8 @@ export const AlbumDetailScreen: React.FC = () => {
   const handlePhotoPress = useCallback(
     (photo: Photo, index: number) => {
       navigation.navigate('PhotoViewer', {
-        photo,
-        photos,
+        photo: photoToSerializable(photo),
+        photos: photos.map(photoToSerializable),
         initialIndex: index,
       });
     },
@@ -150,7 +155,7 @@ export const AlbumDetailScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.title}>{album.title}</Text>
+            <Text style={styles.title}>{albumTitle}</Text>
           </View>
           <View style={styles.backButton} />
         </View>
@@ -173,7 +178,7 @@ export const AlbumDetailScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.title}>{album.title}</Text>
+            <Text style={styles.title}>{albumTitle}</Text>
           </View>
           <View style={styles.backButton} />
         </View>
@@ -200,7 +205,7 @@ export const AlbumDetailScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>{album.title}</Text>
+          <Text style={styles.title}>{albumTitle}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <View style={styles.backButton} />

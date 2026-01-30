@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PhotoGrid, ProfileButton, LibraryDropdown } from '../components';
 import { colors, spacing, typography } from '../theme';
-import { Photo, RootStackParamList } from '../types';
+import { Photo, RootStackParamList, photoToSerializable } from '../types';
 import { groupPhotosByDate } from '../utils/photoUtils';
 import { useAuth } from '../context/AuthContext';
 import { getPhotosFromLibrary, convertPlexPhotosToPhotos, PhotosResult } from '../services/plexService';
@@ -95,8 +95,8 @@ export const PhotosScreen: React.FC = () => {
   const handlePhotoPress = useCallback(
     (photo: Photo, allPhotos: Photo[], index: number) => {
       navigation.navigate('PhotoViewer', {
-        photo,
-        photos: allPhotos,
+        photo: photoToSerializable(photo),
+        photos: allPhotos.map(photoToSerializable),
         initialIndex: index,
       });
     },

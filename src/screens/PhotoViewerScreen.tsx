@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Paths, File as ExpoFile } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { colors, spacing } from '../theme';
-import { RootStackParamList, Photo } from '../types';
+import { RootStackParamList, Photo, serializableToPhoto } from '../types';
 import { downloadPhoto } from '../services/downloadService';
 import { formatDate } from '../utils/photoUtils';
 import { ratePhoto, getEnrichedPhotoMetadata, EnrichedPhotoMetadata } from '../services/plexService';
@@ -30,8 +30,11 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 export const PhotoViewerScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PhotoViewerRouteProp>();
-  const { photos, initialIndex } = route.params;
+  const { photos: serializablePhotos, initialIndex } = route.params;
   const { selectedServer } = useAuth();
+
+  // Convert serializable photos back to Photo objects with Date fields
+  const photos = useMemo(() => serializablePhotos.map(serializableToPhoto), [serializablePhotos]);
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [downloading, setDownloading] = useState(false);
