@@ -61,8 +61,10 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    margin: 1,
+    margin: 4,
     backgroundColor: colors.surface,
+    borderRadius: borderRadius.sm,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',

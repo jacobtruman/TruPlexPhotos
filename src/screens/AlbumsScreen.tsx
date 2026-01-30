@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   list: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 4,
     paddingBottom: spacing.xl,
   },
 });

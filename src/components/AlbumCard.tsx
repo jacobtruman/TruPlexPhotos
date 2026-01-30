@@ -14,7 +14,8 @@ interface AlbumCardProps {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const NUM_COLUMNS = 3;
-const DEFAULT_SIZE = (SCREEN_WIDTH - 8) / NUM_COLUMNS;
+const CONTAINER_PADDING = 8; // 4px on each side
+const DEFAULT_SIZE = (SCREEN_WIDTH - CONTAINER_PADDING - (NUM_COLUMNS * 8)) / NUM_COLUMNS; // Account for container padding + folder margins
 const TAB_HEIGHT = 12;
 
 export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = DEFAULT_SIZE, onPress }) => {
@@ -26,7 +27,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = D
 
   return (
     <TouchableOpacity
-      style={[styles.container, { width: size, margin: 1 }]}
+      style={[styles.container, { width: size, margin: 4 }]}
       onPress={onPress}
       activeOpacity={0.8}
     >

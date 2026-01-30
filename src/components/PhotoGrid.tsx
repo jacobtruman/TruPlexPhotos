@@ -24,7 +24,8 @@ interface PhotoSection {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const NUM_COLUMNS = 3;
-const PHOTO_SIZE = (SCREEN_WIDTH - 8) / NUM_COLUMNS;
+const CONTAINER_PADDING = 8; // 4px on each side
+const PHOTO_SIZE = (SCREEN_WIDTH - CONTAINER_PADDING - (NUM_COLUMNS * 8)) / NUM_COLUMNS; // Account for container padding + photo margins
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
   photoGroups,
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    paddingHorizontal: 2,
+    paddingHorizontal: 4,
   },
   loadingMore: {
     flexDirection: 'row',

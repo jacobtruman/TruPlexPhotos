@@ -15,7 +15,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const NUM_COLUMNS = 3;
-const PHOTO_SIZE = (SCREEN_WIDTH - 8) / NUM_COLUMNS;
+const CONTAINER_PADDING = 8; // 4px on each side
+const PHOTO_SIZE = (SCREEN_WIDTH - CONTAINER_PADDING - (NUM_COLUMNS * 8)) / NUM_COLUMNS; // Account for container padding + photo margins
 
 // Union type for list items
 type ListItem = { type: 'folder'; data: Album } | { type: 'photo'; data: Photo };
@@ -58,8 +59,7 @@ export const AlbumDetailScreen: React.FC = () => {
       const fetchedFolders = convertPlexAlbumsToAlbums(contents.folders, selectedServer, serverToken);
       const fetchedPhotos = convertPlexPhotosToPhotos(contents.photos, selectedServer, serverToken);
 
-      // Sort photos by date (newest first)
-      fetchedPhotos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      // Use Plex's original order (no sorting)
 
       setFolders(fetchedFolders);
       setPhotos(fetchedPhotos);
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   grid: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 4,
     paddingBottom: spacing.xl,
   },
 });
