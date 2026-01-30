@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, RefreshControl, Platform } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,7 @@ type ListItem = { type: 'folder'; data: Album } | { type: 'photo'; data: Photo }
 export const AlbumDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AlbumDetailRouteProp>();
-  const { albumId, albumKey, albumRatingKey, albumTitle } = route.params;
+  const { albumId, albumKey, albumRatingKey, albumTitle, breadcrumb, breadcrumbHistory = [] } = route.params;
   const { selectedServer } = useAuth();
 
   const [folders, setFolders] = useState<Album[]>([]);
@@ -88,9 +88,19 @@ export const AlbumDetailScreen: React.FC = () => {
         albumKey: folder.key,
         albumRatingKey: folder.ratingKey,
         albumTitle: folder.title,
+        breadcrumb: breadcrumb ? `${breadcrumb} / ${folder.title}` : folder.title,
+        breadcrumbHistory: [
+          ...breadcrumbHistory,
+          {
+            title: folder.title,
+            albumId: folder.id,
+            albumKey: folder.key,
+            albumRatingKey: folder.ratingKey,
+          },
+        ],
       });
     },
-    [navigation]
+    [navigation, breadcrumb, breadcrumbHistory]
   );
 
   const handlePhotoPress = useCallback(
@@ -132,6 +142,52 @@ export const AlbumDetailScreen: React.FC = () => {
     }
   };
 
+  // Handle breadcrumb click to navigate back to that level
+  const handleBreadcrumbClick = useCallback(
+    (index: number) => {
+      if (index >= breadcrumbHistory.length - 1) {
+        // Clicking on current folder, do nothing
+        return;
+      }
+
+      // Calculate how many levels to go back
+      const levelsToGoBack = breadcrumbHistory.length - 1 - index;
+
+      // Use pop() to go back with proper animation
+      navigation.pop(levelsToGoBack);
+    },
+    [navigation, breadcrumbHistory]
+  );
+
+  // Render breadcrumb with current folder more prominent and clickable segments
+  const renderBreadcrumb = () => {
+    if (breadcrumbHistory.length === 0) {
+      return <Text style={styles.title}>{albumTitle}</Text>;
+    }
+
+    // Separate path items from current folder
+    const pathItems = breadcrumbHistory.slice(0, -1);
+    const currentItem = breadcrumbHistory[breadcrumbHistory.length - 1];
+
+    return (
+      <>
+        {pathItems.length > 0 && (
+          <View style={styles.breadcrumbPathContainer}>
+            {pathItems.map((item, index) => (
+              <React.Fragment key={`${item.albumId}-${index}`}>
+                {index > 0 && <Text style={styles.breadcrumbSeparator}> / </Text>}
+                <TouchableOpacity onPress={() => handleBreadcrumbClick(index)}>
+                  <Text style={styles.breadcrumbPath}>{item.title}</Text>
+                </TouchableOpacity>
+              </React.Fragment>
+            ))}
+          </View>
+        )}
+        <Text style={styles.breadcrumbCurrent}>{currentItem.title}</Text>
+      </>
+    );
+  };
+
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity
@@ -141,7 +197,7 @@ export const AlbumDetailScreen: React.FC = () => {
         <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
       </TouchableOpacity>
       <View style={styles.headerInfo}>
-        <Text style={styles.title}>{albumTitle}</Text>
+        {renderBreadcrumb()}
       </View>
       <View style={styles.backButton} />
     </View>
@@ -174,7 +230,7 @@ export const AlbumDetailScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>{albumTitle}</Text>
+          {renderBreadcrumb()}
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <View style={styles.backButton} />
@@ -223,6 +279,28 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h3,
     color: colors.textPrimary,
+  },
+  breadcrumbPathContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  breadcrumbPath: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '400',
+  },
+  breadcrumbSeparator: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '400',
+  },
+  breadcrumbCurrent: {
+    ...typography.h3,
+    color: colors.textPrimary,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   subtitle: {
     ...typography.caption,

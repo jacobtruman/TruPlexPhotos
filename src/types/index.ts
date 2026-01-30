@@ -190,6 +190,13 @@ export type RootStackParamList = {
     albumKey?: string;
     albumRatingKey?: string;
     albumTitle: string;
+    breadcrumb?: string; // Breadcrumb path like "2009 / May"
+    breadcrumbHistory?: Array<{
+      title: string;
+      albumId: string;
+      albumKey?: string;
+      albumRatingKey?: string;
+    }>; // History of breadcrumb items for navigation
   };
 };
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TabNavigator } from './TabNavigator';
 import {
@@ -70,6 +71,10 @@ export const RootNavigator: React.FC = () => {
             component={AlbumDetailScreen}
             options={{
               animation: 'slide_from_right',
+              ...(Platform.OS === 'android' && {
+                statusBarColor: colors.background,
+                navigationBarColor: colors.background,
+              }),
             }}
           />
         </>

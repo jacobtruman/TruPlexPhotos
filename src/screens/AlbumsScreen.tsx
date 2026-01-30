@@ -66,6 +66,15 @@ export const AlbumsScreen: React.FC = () => {
       albumKey: album.key,
       albumRatingKey: album.ratingKey,
       albumTitle: album.title,
+      breadcrumb: album.title, // Start breadcrumb with the album title
+      breadcrumbHistory: [
+        {
+          title: album.title,
+          albumId: album.id,
+          albumKey: album.key,
+          albumRatingKey: album.ratingKey,
+        },
+      ],
     });
   };
 
