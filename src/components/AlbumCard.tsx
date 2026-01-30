@@ -116,9 +116,10 @@ const styles = StyleSheet.create({
   folderTab: {
     height: TAB_HEIGHT,
     borderTopLeftRadius: borderRadius.md,
-    borderTopRightRadius: borderRadius.sm,
+    borderTopRightRadius: borderRadius.md,
     marginBottom: -2, // Overlap slightly with body
-    backgroundColor: colors.surfaceLight,
+    backgroundColor: colors.primaryDark,
+    opacity: 0.3,
   },
   folderBody: {
     borderRadius: borderRadius.md,
