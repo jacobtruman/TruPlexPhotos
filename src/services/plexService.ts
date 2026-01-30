@@ -621,6 +621,11 @@ export function convertPlexPhotosToPhotos(
       createdAt = new Date(item.addedAt * 1000);
     }
 
+    // Only create modifiedAt if updatedAt is valid (non-zero)
+    const modifiedAt = item.updatedAt && item.updatedAt > 0
+      ? new Date(item.updatedAt * 1000)
+      : undefined;
+
     return {
       id: item.ratingKey,
       uri: thumbUrl,
@@ -630,7 +635,7 @@ export function convertPlexPhotosToPhotos(
       width: media?.width || 0,
       height: media?.height || 0,
       createdAt,
-      modifiedAt: new Date(item.updatedAt * 1000),
+      modifiedAt,
       mediaType: isVideo ? 'video' as const : 'photo' as const,
       duration: isVideo ? media?.duration : undefined,
       rating: item.userRating,

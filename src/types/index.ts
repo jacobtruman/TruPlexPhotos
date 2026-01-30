@@ -196,10 +196,19 @@ export type RootStackParamList = {
 
 // Helper functions to convert between Photo and SerializablePhoto
 export function photoToSerializable(photo: Photo): SerializablePhoto {
+  // Validate dates before serialization
+  const createdAt = photo.createdAt instanceof Date && !isNaN(photo.createdAt.getTime())
+    ? photo.createdAt.toISOString()
+    : new Date().toISOString(); // Fallback to current date if invalid
+
+  const modifiedAt = photo.modifiedAt instanceof Date && !isNaN(photo.modifiedAt.getTime())
+    ? photo.modifiedAt.toISOString()
+    : undefined;
+
   return {
     ...photo,
-    createdAt: photo.createdAt.toISOString(),
-    modifiedAt: photo.modifiedAt?.toISOString(),
+    createdAt,
+    modifiedAt,
   };
 }
 

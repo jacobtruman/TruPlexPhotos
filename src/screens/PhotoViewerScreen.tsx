@@ -230,19 +230,30 @@ export const PhotoViewerScreen: React.FC = () => {
     []
   );
 
-  const renderPhoto = ({ item }: { item: Photo }) => (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={toggleControls}
-      style={styles.photoContainer}
-    >
-      <Image
-        source={{ uri: item.uri }}
-        style={styles.photo}
-        resizeMode="contain"
-      />
-    </TouchableOpacity>
-  );
+  const renderPhoto = ({ item }: { item: Photo }) => {
+    const hasValidUri = item.uri && item.uri.trim() !== '';
+
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={toggleControls}
+        style={styles.photoContainer}
+      >
+        {hasValidUri ? (
+          <Image
+            source={{ uri: item.uri }}
+            style={styles.photo}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={styles.placeholderContainer}>
+            <Ionicons name="image-outline" size={100} color={colors.textSecondary} />
+            <Text style={styles.placeholderText}>Image not available</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -403,12 +414,12 @@ export const PhotoViewerScreen: React.FC = () => {
               <Text style={styles.infoSectionHeader}>Dates</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Date Added</Text>
-                <Text style={styles.infoValue}>{formatDateTime(new Date(currentPhoto.createdAt))}</Text>
+                <Text style={styles.infoValue}>{formatDateTime(currentPhoto.createdAt)}</Text>
               </View>
               {currentPhoto.modifiedAt && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Date Modified</Text>
-                  <Text style={styles.infoValue}>{formatDateTime(new Date(currentPhoto.modifiedAt))}</Text>
+                  <Text style={styles.infoValue}>{formatDateTime(currentPhoto.modifiedAt)}</Text>
                 </View>
               )}
 
@@ -563,6 +574,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
     marginLeft: spacing.sm,
+  },
+  placeholderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  placeholderText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    marginTop: spacing.md,
   },
 });
 

@@ -21,7 +21,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, itemCount, size = D
   // Use itemCount prop if provided, otherwise fall back to album.photoCount
   const count = itemCount !== undefined ? itemCount : album.photoCount;
   const countText = count > 0 ? `${count} items` : '';
-  const hasCoverPhoto = !!album.coverPhoto?.uri;
+  const hasCoverPhoto = !!album.coverPhoto?.uri && album.coverPhoto.uri.trim() !== '';
   const hasUltraBlurColors = !!album.ultraBlurColors;
 
   return (

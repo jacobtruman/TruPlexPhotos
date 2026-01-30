@@ -21,17 +21,25 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
   size = DEFAULT_SIZE,
   selected = false,
 }) => {
+  const hasValidUri = photo.uri && photo.uri.trim() !== '';
+
   return (
     <TouchableOpacity
       style={[styles.container, { width: size, height: size }]}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Image
-        source={{ uri: photo.uri }}
-        style={styles.image}
-        resizeMode="cover"
-      />
+      {hasValidUri ? (
+        <Image
+          source={{ uri: photo.uri }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.image, styles.placeholderContainer]}>
+          <Ionicons name="image-outline" size={size * 0.4} color={colors.textSecondary} />
+        </View>
+      )}
       
       {photo.mediaType === 'video' && photo.duration && (
         <View style={styles.durationBadge}>
@@ -59,6 +67,11 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  placeholderContainer: {
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   durationBadge: {
     position: 'absolute',
