@@ -73,7 +73,6 @@ export const RootNavigator: React.FC = () => {
               animation: 'slide_from_right',
               ...(Platform.OS === 'android' && {
                 statusBarColor: colors.background,
-                navigationBarColor: colors.background,
               }),
             }}
           />
