@@ -178,7 +178,7 @@ export interface SerializablePhoto extends Omit<Photo, 'createdAt' | 'modifiedAt
 }
 
 export type RootStackParamList = {
-  Main: undefined;
+  Main: { screen?: 'Timeline' | 'Library' } | undefined;
   Login: undefined;
   ProfileSelection: undefined;
   ServerSelection: undefined;
@@ -193,9 +193,10 @@ export type RootStackParamList = {
     breadcrumb?: string; // Breadcrumb path like "2009 / May"
     breadcrumbHistory?: Array<{
       title: string;
-      albumId: string;
+      albumId?: string;
       albumKey?: string;
       albumRatingKey?: string;
+      isLibrary?: boolean; // True if this is the library root
     }>; // History of breadcrumb items for navigation
   };
 };

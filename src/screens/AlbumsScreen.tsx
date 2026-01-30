@@ -61,13 +61,19 @@ export const AlbumsScreen: React.FC = () => {
   }, [fetchAlbums]);
 
   const handleAlbumPress = (album: Album) => {
+    const libraryName = selectedLibrary?.title || 'Library';
+
     navigation.navigate('AlbumDetail', {
       albumId: album.id,
       albumKey: album.key,
       albumRatingKey: album.ratingKey,
       albumTitle: album.title,
-      breadcrumb: album.title, // Start breadcrumb with the album title
+      breadcrumb: album.title,
       breadcrumbHistory: [
+        {
+          title: libraryName,
+          isLibrary: true,
+        },
         {
           title: album.title,
           albumId: album.id,

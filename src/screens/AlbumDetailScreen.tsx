@@ -150,6 +150,15 @@ export const AlbumDetailScreen: React.FC = () => {
         return;
       }
 
+      const clickedItem = breadcrumbHistory[index];
+
+      // If clicking on library, navigate back to the Library tab
+      if (clickedItem.isLibrary) {
+        // Pop all AlbumDetail screens to go back to Main (Library tab)
+        navigation.navigate('Main', { screen: 'Library' });
+        return;
+      }
+
       // Calculate how many levels to go back
       const levelsToGoBack = breadcrumbHistory.length - 1 - index;
 
@@ -174,10 +183,12 @@ export const AlbumDetailScreen: React.FC = () => {
         {pathItems.length > 0 && (
           <View style={styles.breadcrumbPathContainer}>
             {pathItems.map((item, index) => (
-              <React.Fragment key={`${item.albumId}-${index}`}>
+              <React.Fragment key={`${item.albumId || 'library'}-${index}`}>
                 {index > 0 && <Text style={styles.breadcrumbSeparator}> / </Text>}
                 <TouchableOpacity onPress={() => handleBreadcrumbClick(index)}>
-                  <Text style={styles.breadcrumbPath}>{item.title}</Text>
+                  <Text style={item.isLibrary ? styles.breadcrumbLibrary : styles.breadcrumbPath}>
+                    {item.title}
+                  </Text>
                 </TouchableOpacity>
               </React.Fragment>
             ))}
@@ -285,6 +296,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
+  },
+  breadcrumbLibrary: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
   },
   breadcrumbPath: {
     fontSize: 14,
