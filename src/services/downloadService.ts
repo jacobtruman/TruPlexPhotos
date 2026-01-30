@@ -69,8 +69,15 @@ export const downloadPhoto = async (
 
     const destinationFile = new ExpoFile(Paths.cache, filename);
 
-    // Use fullUri for full resolution, fall back to uri (thumbnail) if not available
-    const downloadUrl = photo.fullUri || photo.uri;
+    // Only download full resolution - don't fall back to thumbnail
+    if (!photo.fullUri) {
+      return {
+        success: false,
+        message: 'Full resolution file not available for download',
+      };
+    }
+
+    const downloadUrl = photo.fullUri;
 
     // Download the file using the new static method
     // Type assertion needed to resolve conflict between expo-file-system File and DOM File
