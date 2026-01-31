@@ -3,7 +3,8 @@ import appJson from '../../app.json';
 
 export const APP_VERSION = packageJson.version;
 export const APP_NAME = appJson.expo.name;
-export const BUILD_NUMBER_IOS = appJson.expo.ios?.buildNumber || '1';
+// iOS buildNumber is managed remotely by EAS, fallback to '1' for local dev
+export const BUILD_NUMBER_IOS = '1';
 export const BUILD_NUMBER_ANDROID = appJson.expo.android?.versionCode?.toString() || '1';
 
 export const getVersionString = (platform: 'ios' | 'android' | 'web' = 'android'): string => {

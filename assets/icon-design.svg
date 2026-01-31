@@ -1,0 +1,128 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#1F1F1F" rx="180"/>
+
+  <!-- Camera body housing (square with rounded corners) -->
+  <rect x="112" y="112" width="800" height="800" fill="#2A2A2A" rx="60" stroke="#3A3A3A" stroke-width="4"/>
+
+  <!-- Housing details - subtle gradient -->
+  <defs>
+    <linearGradient id="housingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2F2F2F;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2A2A2A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#252525;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="112" y="112" width="800" height="800" fill="url(#housingGradient)" rx="60"/>
+
+  <!-- Outer lens ring -->
+  <circle cx="512" cy="512" r="380" fill="#2A2A2A" stroke="#E5A00D" stroke-width="8"/>
+  
+  <!-- Lens glass gradient -->
+  <defs>
+    <radialGradient id="lensGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#3A3A3A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2A2A2A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A1A1A;stop-opacity:1" />
+    </radialGradient>
+    <radialGradient id="glassReflection" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" style="stop-color:#E5A00D;stop-opacity:0.4" />
+      <stop offset="30%" style="stop-color:#4A9FD8;stop-opacity:0.3" />
+      <stop offset="60%" style="stop-color:#9B59D0;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#1A1A1A;stop-opacity:0.1" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="512" cy="512" r="360" fill="url(#lensGradient)"/>
+
+  <!-- Glass reflection overlay -->
+  <circle cx="512" cy="512" r="340" fill="url(#glassReflection)" opacity="0.6"/>
+  
+  <!-- Aperture blades (8-blade curved aperture with swirl pattern - outline only) -->
+  <g transform="translate(512, 512)">
+    <!-- Blade 1 -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"/>
+
+    <!-- Blade 2 (45 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(45)"/>
+
+    <!-- Blade 3 (90 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(90)"/>
+
+    <!-- Blade 4 (135 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(135)"/>
+
+    <!-- Blade 5 (180 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(180)"/>
+
+    <!-- Blade 6 (225 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(225)"/>
+
+    <!-- Blade 7 (270 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(270)"/>
+
+    <!-- Blade 8 (315 degrees) -->
+    <path d="M -30,-250 Q 80,-240 150,-180 L 100,-100 Q 40,-140 -10,-150 Z"
+          fill="none"
+          stroke="#E5A00D"
+          stroke-width="8"
+          opacity="0.95"
+          transform="rotate(315)"/>
+  </g>
+  
+  <!-- Center aperture opening (circular) -->
+  <circle cx="512" cy="512" r="100" fill="#1F1F1F" opacity="1"/>
+
+  <!-- Inner highlight circle -->
+  <circle cx="512" cy="512" r="80" fill="none" stroke="#E5A00D" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Lens details - concentric rings -->
+  <circle cx="512" cy="512" r="320" fill="none" stroke="#3A3A3A" stroke-width="2"/>
+  <circle cx="512" cy="512" r="280" fill="none" stroke="#3A3A3A" stroke-width="2"/>
+  <circle cx="512" cy="512" r="240" fill="none" stroke="#3A3A3A" stroke-width="2"/>
+  
+  <!-- Lens reflection highlights -->
+  <ellipse cx="420" cy="420" rx="60" ry="80" fill="#FFFFFF" opacity="0.1" transform="rotate(-45 420 420)"/>
+  <ellipse cx="380" cy="380" rx="30" ry="40" fill="#FFFFFF" opacity="0.15" transform="rotate(-45 380 380)"/>
+  
+  <!-- Outer ring details (screws/mounting points) -->
+  <circle cx="512" cy="132" r="12" fill="#E5A00D" opacity="0.6"/>
+  <circle cx="512" cy="892" r="12" fill="#E5A00D" opacity="0.6"/>
+  <circle cx="132" cy="512" r="12" fill="#E5A00D" opacity="0.6"/>
+  <circle cx="892" cy="512" r="12" fill="#E5A00D" opacity="0.6"/>
+</svg>
+

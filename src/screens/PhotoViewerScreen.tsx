@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
-  Image,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +21,7 @@ import { downloadPhoto } from '../services/downloadService';
 import { formatDate } from '../utils/photoUtils';
 import { ratePhoto, getEnrichedPhotoMetadata, EnrichedPhotoMetadata } from '../services/plexService';
 import { useAuth } from '../context/AuthContext';
+import { ZoomableImage } from '../components/ZoomableImage';
 
 type PhotoViewerRouteProp = RouteProp<RootStackParamList, 'PhotoViewer'>;
 
@@ -231,27 +231,10 @@ export const PhotoViewerScreen: React.FC = () => {
   );
 
   const renderPhoto = ({ item }: { item: Photo }) => {
-    const hasValidUri = item.uri && item.uri.trim() !== '';
-
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={toggleControls}
-        style={styles.photoContainer}
-      >
-        {hasValidUri ? (
-          <Image
-            source={{ uri: item.uri }}
-            style={styles.photo}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={styles.placeholderContainer}>
-            <Ionicons name="image-outline" size={100} color={colors.textSecondary} />
-            <Text style={styles.placeholderText}>Image not available</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      <View style={styles.photoContainer}>
+        <ZoomableImage uri={item.uri} onToggleControls={toggleControls} />
+      </View>
     );
   };
 
@@ -452,10 +435,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  photo: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.8,
-  },
   header: {
     position: 'absolute',
     top: 0,
@@ -574,17 +553,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
     marginLeft: spacing.sm,
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-  },
-  placeholderText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    marginTop: spacing.md,
   },
 });
 

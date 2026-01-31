@@ -2,7 +2,7 @@
   "expo": {
     "name": "TruPlexPhotos",
     "slug": "TruPlexPhotos",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -28,7 +28,7 @@
       "predictiveBackGestureEnabled": false,
       "backgroundColor": "#1F1F1F",
       "package": "com.anonymous.TruPlexPhotos",
-      "versionCode": 5
+      "versionCode": 6
     },
     "web": {
       "favicon": "./assets/favicon.png"
