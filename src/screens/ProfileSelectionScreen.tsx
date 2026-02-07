@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,22 @@ export const ProfileSelectionScreen: React.FC = () => {
   const [selectedProfileForPin, setSelectedProfileForPin] = useState<PlexProfile | null>(null);
   const [pin, setPin] = useState('');
   const [isSwitching, setIsSwitching] = useState(false);
+  const pinInputRef = useRef<TextInput>(null);
+
+  const focusPinInput = useCallback(() => {
+    // Use requestAnimationFrame to ensure the modal is fully rendered
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        pinInputRef.current?.focus();
+      }, 100);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (pinModalVisible) {
+      focusPinInput();
+    }
+  }, [pinModalVisible, focusPinInput]);
 
   const handleProfilePress = async (profile: PlexProfile) => {
     if (isSwitching) return; // Prevent multiple taps
@@ -137,6 +153,7 @@ export const ProfileSelectionScreen: React.FC = () => {
               Enter PIN for {selectedProfileForPin?.title}
             </Text>
             <TextInput
+              ref={pinInputRef}
               style={styles.pinInput}
               value={pin}
               onChangeText={setPin}
@@ -145,7 +162,8 @@ export const ProfileSelectionScreen: React.FC = () => {
               maxLength={4}
               placeholder="••••"
               placeholderTextColor={colors.textMuted}
-              autoFocus={true}
+              returnKeyType="done"
+              onSubmitEditing={handlePinSubmit}
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
