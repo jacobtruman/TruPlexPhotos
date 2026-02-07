@@ -1,5 +1,2 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 # Auto-increment version if not already updated
 node scripts/check-version.js
