@@ -1,30 +1,43 @@
-import React from 'react';
-import { StyleSheet, Image, View, Text, Dimensions } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Image, View, Text, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withDecay,
   runOnJS,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 interface ZoomableImageProps {
   uri: string;
   onToggleControls?: () => void;
+  onZoomStateChange?: (isZoomed: boolean) => void;
 }
 
-export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleControls }) => {
+export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleControls, onZoomStateChange }) => {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const savedTranslateX = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
+
+  // Reset zoom when image changes
+  useEffect(() => {
+    scale.value = 1;
+    savedScale.value = 1;
+    translateX.value = 0;
+    translateY.value = 0;
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
+    // Notify parent that zoom is reset when image changes
+    if (onZoomStateChange) {
+      onZoomStateChange(false);
+    }
+  }, [uri, scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, onZoomStateChange]);
 
   const pinchGesture = Gesture.Pinch()
     .onUpdate((e) => {
@@ -39,12 +52,21 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
         savedScale.value = 1;
         savedTranslateX.value = 0;
         savedTranslateY.value = 0;
+        if (onZoomStateChange) {
+          runOnJS(onZoomStateChange)(false);
+        }
       } else if (scale.value > 5) {
         // Limit zoom in to 5x
         scale.value = withTiming(5);
         savedScale.value = 5;
+        if (onZoomStateChange) {
+          runOnJS(onZoomStateChange)(true);
+        }
       } else {
         savedScale.value = scale.value;
+        if (onZoomStateChange) {
+          runOnJS(onZoomStateChange)(scale.value > 1);
+        }
       }
     });
 
@@ -52,8 +74,8 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
     .onUpdate((e) => {
       // Only allow panning when zoomed in
       if (savedScale.value > 1) {
-        const maxTranslateX = (SCREEN_WIDTH * (savedScale.value - 1)) / 2;
-        const maxTranslateY = (SCREEN_HEIGHT * 0.8 * (savedScale.value - 1)) / 2;
+        const maxTranslateX = (screenWidth * (savedScale.value - 1)) / 2;
+        const maxTranslateY = (screenHeight * 0.8 * (savedScale.value - 1)) / 2;
 
         const newTranslateX = savedTranslateX.value + e.translationX;
         const newTranslateY = savedTranslateY.value + e.translationY;
@@ -88,6 +110,9 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
         savedScale.value = 1;
         savedTranslateX.value = 0;
         savedTranslateY.value = 0;
+        if (onZoomStateChange) {
+          runOnJS(onZoomStateChange)(false);
+        }
       } else {
         // Zoom in to 2.5x at tap location
         const newScale = 2.5;
@@ -95,13 +120,16 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
         savedScale.value = newScale;
 
         // Calculate translation to center on tap point
-        const focalX = e.x - SCREEN_WIDTH / 2;
-        const focalY = e.y - SCREEN_HEIGHT / 2;
-        
+        const focalX = e.x - screenWidth / 2;
+        const focalY = e.y - screenHeight / 2;
+
         translateX.value = withTiming(-focalX * (newScale - 1) / newScale);
         translateY.value = withTiming(-focalY * (newScale - 1) / newScale);
         savedTranslateX.value = -focalX * (newScale - 1) / newScale;
         savedTranslateY.value = -focalY * (newScale - 1) / newScale;
+        if (onZoomStateChange) {
+          runOnJS(onZoomStateChange)(true);
+        }
       }
     });
 
@@ -113,9 +141,14 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
       }
     });
 
+  // Compose gestures:
+  // - Double-tap takes priority over single-tap
+  // - Pinch and pan can happen simultaneously
+  // - All gestures work together
   const composedGesture = Gesture.Simultaneous(
-    Gesture.Exclusive(doubleTapGesture, singleTapGesture),
-    Gesture.Simultaneous(pinchGesture, panGesture)
+    pinchGesture,
+    panGesture,
+    Gesture.Exclusive(doubleTapGesture, singleTapGesture)
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -128,17 +161,38 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
 
   const hasValidUri = uri && uri.trim() !== '';
 
+  // Dynamic styles based on screen dimensions
+  const dynamicStyles = {
+    container: {
+      width: screenWidth,
+      height: screenHeight,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+    },
+    image: {
+      width: screenWidth,
+      height: screenHeight * 0.8,
+    },
+    placeholderContainer: {
+      width: screenWidth,
+      height: screenHeight * 0.8,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      backgroundColor: colors.surface,
+    },
+  };
+
   return (
     <GestureDetector gesture={composedGesture}>
-      <Animated.View style={[styles.container, animatedStyle]}>
+      <Animated.View style={[dynamicStyles.container, animatedStyle]}>
         {hasValidUri ? (
           <Image
             source={{ uri }}
-            style={styles.image}
+            style={dynamicStyles.image}
             resizeMode="contain"
           />
         ) : (
-          <View style={styles.placeholderContainer}>
+          <View style={dynamicStyles.placeholderContainer}>
             <Ionicons name="image-outline" size={100} color={colors.textSecondary} />
             <Text style={styles.placeholderText}>Image not available</Text>
           </View>
@@ -149,23 +203,6 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.8,
-  },
-  placeholderContainer: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-  },
   placeholderText: {
     color: colors.textSecondary,
     marginTop: 16,

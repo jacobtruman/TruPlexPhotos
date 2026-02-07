@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,9 +23,11 @@ export const LoginScreen: React.FC = () => {
       <View style={styles.content}>
         {/* Logo/Branding Section */}
         <View style={styles.brandingContainer}>
-          <View style={styles.logoContainer}>
-            <Ionicons name="images" size={80} color={colors.primary} />
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.appName}>TruPlex Photos</Text>
           <Text style={styles.tagline}>Your photos, beautifully organized</Text>
         </View>
@@ -85,13 +88,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: spacing.xxl,
   },
-  logoContainer: {
-    width: 140,
-    height: 140,
+  logoImage: {
+    width: 320,
+    height: 320,
     borderRadius: borderRadius.xl,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: spacing.lg,
   },
   appName: {

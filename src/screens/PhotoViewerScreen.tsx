@@ -4,7 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
   FlatList,
   Alert,
   ActivityIndicator,
@@ -18,20 +18,21 @@ import * as Sharing from 'expo-sharing';
 import { colors, spacing } from '../theme';
 import { RootStackParamList, Photo, serializableToPhoto } from '../types';
 import { downloadPhoto } from '../services/downloadService';
-import { formatDate } from '../utils/photoUtils';
 import { ratePhoto, getEnrichedPhotoMetadata, EnrichedPhotoMetadata } from '../services/plexService';
 import { useAuth } from '../context/AuthContext';
 import { ZoomableImage } from '../components/ZoomableImage';
 
 type PhotoViewerRouteProp = RouteProp<RootStackParamList, 'PhotoViewer'>;
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+// Stable viewability config to prevent FlatList re-renders
+const VIEWABILITY_CONFIG = { itemVisiblePercentThreshold: 50 };
 
 export const PhotoViewerScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PhotoViewerRouteProp>();
   const { photos: serializablePhotos, initialIndex } = route.params;
   const { selectedServer } = useAuth();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   // Convert serializable photos back to Photo objects with Date fields
   const photos = useMemo(() => serializablePhotos.map(serializableToPhoto), [serializablePhotos]);
@@ -43,6 +44,7 @@ export const PhotoViewerScreen: React.FC = () => {
   const [showControls, setShowControls] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   // Cache enriched metadata by photo id
   const [enrichedMetadata, setEnrichedMetadata] = useState<Record<string, EnrichedPhotoMetadata>>({});
   // Track favorite status for each photo by id
@@ -219,7 +221,9 @@ export const PhotoViewerScreen: React.FC = () => {
     }
   }, [currentPhoto, isFavorite, selectedServer]);
 
-  const toggleControls = () => setShowControls(!showControls);
+  const toggleControls = useCallback(() => {
+    setShowControls(prev => !prev);
+  }, []);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
@@ -230,13 +234,38 @@ export const PhotoViewerScreen: React.FC = () => {
     []
   );
 
-  const renderPhoto = ({ item }: { item: Photo }) => {
+  const handleZoomStateChange = useCallback((isZoomed: boolean) => {
+    setScrollEnabled(!isZoomed);
+  }, []);
+
+  // Dynamic styles for photo container based on screen dimensions
+  const photoContainerStyle = useMemo(() => ({
+    width: screenWidth,
+    height: screenHeight,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  }), [screenWidth, screenHeight]);
+
+  const renderPhoto = useCallback(({ item }: { item: Photo }) => {
+    // Use full resolution image for viewing, fall back to thumbnail if not available
+    const imageUri = item.fullUri || item.uri;
     return (
-      <View style={styles.photoContainer}>
-        <ZoomableImage uri={item.uri} onToggleControls={toggleControls} />
+      <View style={photoContainerStyle}>
+        <ZoomableImage
+          uri={imageUri}
+          onToggleControls={toggleControls}
+          onZoomStateChange={handleZoomStateChange}
+        />
       </View>
     );
-  };
+  }, [photoContainerStyle, toggleControls, handleZoomStateChange]);
+
+  // Memoize getItemLayout to use dynamic screen width
+  const getItemLayout = useCallback((_: unknown, index: number) => ({
+    length: screenWidth,
+    offset: screenWidth * index,
+    index,
+  }), [screenWidth]);
 
   return (
     <View style={styles.container}>
@@ -246,15 +275,12 @@ export const PhotoViewerScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         horizontal
         pagingEnabled
+        scrollEnabled={scrollEnabled}
         showsHorizontalScrollIndicator={false}
         initialScrollIndex={initialIndex}
-        getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH,
-          offset: SCREEN_WIDTH * index,
-          index,
-        })}
+        getItemLayout={getItemLayout}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+        viewabilityConfig={VIEWABILITY_CONFIG}
       />
 
       {showControls && (
@@ -428,12 +454,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundDark,
-  },
-  photoContainer: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     position: 'absolute',

@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1F1F1F"
+      "backgroundColor": "#111111"
     },
     "ios": {
       "supportsTablet": true,
@@ -22,13 +22,12 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1F1F1F"
+        "backgroundColor": "#111111"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "backgroundColor": "#1F1F1F",
+      "backgroundColor": "#111111",
       "package": "com.anonymous.TruPlexPhotos",
-      "versionCode": 6
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"
