@@ -86,7 +86,7 @@ export const AboutScreen: React.FC = () => {
           <InfoItem
             icon="logo-react"
             title="Built With"
-            subtitle="React Native & Expo"
+            subtitle="React Native"
           />
           <InfoItem
             icon="server-outline"
