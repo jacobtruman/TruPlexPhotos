@@ -202,8 +202,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
       return Math.abs(hash).toString(16);
     };
     const cacheKey = hashCode(uri);
-    // Add version suffix to cache key to invalidate old low-quality cached images
-    const cachePath = `${RNFS.CachesDirectoryPath}/img_${cacheKey}_v3.jpg`;
+    const cachePath = `${RNFS.CachesDirectoryPath}/img_${cacheKey}.jpg`;
 
     const loadImage = async () => {
       setIsLoading(true);

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Sync version from package.json to app.json
+ * Sync version from package.json to native iOS and Android projects
  * Also increments build numbers for iOS and Android
  */
 
@@ -13,27 +13,35 @@ const packagePath = path.join(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const version = packageJson.version;
 
-// Read app.json
-const appPath = path.join(__dirname, '..', 'app.json');
-const appJson = JSON.parse(fs.readFileSync(appPath, 'utf8'));
+// Note: iOS version is managed via Xcode project settings (MARKETING_VERSION and CURRENT_PROJECT_VERSION)
+// To update iOS version, use Xcode or update the project.pbxproj file directly
+console.log(`📱 iOS: Update version in Xcode project settings`);
 
-// Update version
-appJson.expo.version = version;
+// Update Android build.gradle
+const buildGradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
+if (fs.existsSync(buildGradlePath)) {
+  let gradleContent = fs.readFileSync(buildGradlePath, 'utf8');
 
-// Increment build numbers
-if (appJson.expo.ios && appJson.expo.ios.buildNumber) {
-  const currentBuildNumber = parseInt(appJson.expo.ios.buildNumber, 10);
-  appJson.expo.ios.buildNumber = String(currentBuildNumber + 1);
+  // Update versionName
+  gradleContent = gradleContent.replace(
+    /versionName\s+"[^"]+"/,
+    `versionName "${version}"`
+  );
+
+  // Increment versionCode
+  const versionCodeMatch = gradleContent.match(/versionCode\s+(\d+)/);
+  if (versionCodeMatch) {
+    const currentCode = parseInt(versionCodeMatch[1], 10);
+    const newCode = currentCode + 1;
+    gradleContent = gradleContent.replace(
+      /versionCode\s+\d+/,
+      `versionCode ${newCode}`
+    );
+    console.log(`🤖 Android version code: ${newCode}`);
+  }
+
+  fs.writeFileSync(buildGradlePath, gradleContent);
 }
-
-if (appJson.expo.android && appJson.expo.android.versionCode) {
-  appJson.expo.android.versionCode = appJson.expo.android.versionCode + 1;
-}
-
-// Write back to app.json
-fs.writeFileSync(appPath, JSON.stringify(appJson, null, 2) + '\n');
 
 console.log(`✅ Version synced to ${version}`);
-console.log(`📱 iOS build number: ${appJson.expo.ios?.buildNumber || 'N/A'}`);
-console.log(`🤖 Android version code: ${appJson.expo.android?.versionCode || 'N/A'}`);
 
