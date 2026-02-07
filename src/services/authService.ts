@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { PlexPin, PlexUser, PlexProfile, PlexServer, PlexResource, PlexConnection } from '../types';
 
 const PLEX_API_BASE = 'https://plex.tv/api/v2';
-const APP_NAME = 'TruPlex Photos';
+const APP_NAME = 'Tru Photos';
 const APP_VERSION = '1.0.0';
 
 // Secure storage keys
@@ -18,7 +18,7 @@ const STORAGE_KEYS = {
 };
 
 // Service name for keychain
-const KEYCHAIN_SERVICE = 'com.truplexphotos';
+const KEYCHAIN_SERVICE = 'com.truphotos';
 
 // Helper functions for secure storage using react-native-keychain
 async function getSecureItem(key: string): Promise<string | null> {

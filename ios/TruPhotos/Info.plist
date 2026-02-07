@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>TruPlexPhotos</string>
+	<string>Tru Photos</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -34,11 +34,11 @@
 		<true/>
 	</dict>
 	<key>NSFaceIDUsageDescription</key>
-	<string>TruPlexPhotos uses Face ID to securely access your saved credentials.</string>
+	<string>Tru Photos uses Face ID to securely access your saved credentials.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>TruPlexPhotos needs permission to save photos and videos to your photo library.</string>
+	<string>Tru Photos needs permission to save photos and videos to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TruPlexPhotos needs access to your photo library to save photos and videos from your Plex server.</string>
+	<string>Tru Photos needs access to your photo library to save photos and videos from your Plex server.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

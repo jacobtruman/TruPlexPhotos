@@ -3,7 +3,7 @@ import appJson from '../../app.json';
 
 export const APP_VERSION = packageJson.version;
 export const APP_NAME = appJson.displayName || appJson.name;
-// Build numbers are managed in native projects (android/app/build.gradle and ios/TruPlexPhotos/Info.plist)
+// Build numbers are managed in native projects (android/app/build.gradle and ios/TruPhotos/Info.plist)
 export const BUILD_NUMBER_IOS = '1';
 export const BUILD_NUMBER_ANDROID = '1';
 

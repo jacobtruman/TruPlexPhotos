@@ -28,7 +28,7 @@ export const LoginScreen: React.FC = () => {
             style={styles.logoImage}
             resizeMode="contain"
           />
-          <Text style={styles.appName}>TruPlex Photos</Text>
+          <Text style={styles.appName}>Tru Photos</Text>
           <Text style={styles.tagline}>Your photos, beautifully organized</Text>
         </View>
 

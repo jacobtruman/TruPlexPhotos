@@ -51,12 +51,12 @@ export const AboutScreen: React.FC = () => {
 
   const handlePrivacyPolicy = async () => {
     // TODO: Replace with your actual privacy policy URL
-    await Linking.openURL('https://github.com/jacobtruman/TruPlexPhotos/blob/main/PRIVACY.md');
+    await Linking.openURL('https://github.com/jacobtruman/TruPhotos/blob/main/PRIVACY.md');
   };
 
   const handleOpenSource = async () => {
     // Opens the GitHub repository
-    await Linking.openURL('https://github.com/jacobtruman/TruPlexPhotos');
+    await Linking.openURL('https://github.com/jacobtruman/TruPhotos');
   };
 
   return (
@@ -75,7 +75,7 @@ export const AboutScreen: React.FC = () => {
           <View style={styles.appIcon}>
             <Ionicons name="images" size={48} color={colors.primary} />
           </View>
-          <Text style={styles.appName}>TruPlexPhotos</Text>
+          <Text style={styles.appName}>Tru Photos</Text>
           <Text style={styles.appTagline}>Browse and manage your Plex photos</Text>
           <Text style={styles.version}>{getVersionString(Platform.OS as 'ios' | 'android')}</Text>
         </View>

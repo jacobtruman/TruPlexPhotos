@@ -77,13 +77,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.truplexphotos"
+    namespace "com.truphotos"
     defaultConfig {
-        applicationId "com.truplexphotos"
+        applicationId "com.truphotos"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.0.8"
+        versionCode 4
+        versionName "1.0.9"
     }
     signingConfigs {
         debug {

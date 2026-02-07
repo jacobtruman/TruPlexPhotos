@@ -47,6 +47,12 @@ export const ProfileSelectionScreen: React.FC = () => {
   const handlePinSubmit = async () => {
     if (!selectedProfileForPin || isSwitching) return;
 
+    // Validate PIN is not empty
+    if (!pin || pin.trim().length === 0) {
+      Alert.alert('PIN Required', 'Please enter your PIN.');
+      return;
+    }
+
     setIsSwitching(true);
     try {
       // Pass the PIN to the API for validation
@@ -134,12 +140,12 @@ export const ProfileSelectionScreen: React.FC = () => {
               style={styles.pinInput}
               value={pin}
               onChangeText={setPin}
-              keyboardType="numeric"
+              keyboardType="number-pad"
               secureTextEntry
               maxLength={4}
               placeholder="••••"
               placeholderTextColor={colors.textMuted}
-              autoFocus
+              autoFocus={true}
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -283,12 +289,14 @@ const styles = StyleSheet.create({
   pinInput: {
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.md,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     fontSize: 24,
-    textAlign: 'center',
     color: colors.textPrimary,
-    letterSpacing: 8,
     marginBottom: spacing.lg,
+    width: 120,
+    alignSelf: 'center',
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',

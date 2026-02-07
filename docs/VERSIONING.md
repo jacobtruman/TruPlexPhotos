@@ -2,7 +2,7 @@
 
 ## Overview
 
-TruPlexPhotos uses **Semantic Versioning (SemVer)** for version numbers and automated build number tracking for app stores.
+Tru Photos uses **Semantic Versioning (SemVer)** for version numbers and automated build number tracking for app stores.
 
 ## Version Format
 

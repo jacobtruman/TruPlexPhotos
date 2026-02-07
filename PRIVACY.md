@@ -1,16 +1,16 @@
-# Privacy Policy for TruPlexPhotos
+# Privacy Policy for Tru Photos
 
 **Last Updated: January 30, 2026**
 
 ## Overview
 
-TruPlexPhotos is a mobile application that allows you to browse and manage photos from your Plex Media Server. This privacy policy explains how the app handles your data.
+Tru Photos is a mobile application that allows you to browse and manage photos from your Plex Media Server. This privacy policy explains how the app handles your data.
 
 ## Data Collection
 
 ### What We Collect
 
-TruPlexPhotos does **NOT** collect, store, or transmit any personal data to third-party servers. All data remains on your device and your Plex Media Server.
+Tru Photos does **NOT** collect, store, or transmit any personal data to third-party servers. All data remains on your device and your Plex Media Server.
 
 The app stores the following information **locally on your device only**:
 
@@ -41,7 +41,7 @@ This data is **never transmitted** to any server except your own Plex Media Serv
 
 ### Plex Media Server
 
-TruPlexPhotos connects directly to:
+Tru Photos connects directly to:
 
 1. **Plex.tv** - For authentication and server discovery
 2. **Your Plex Media Server** - For accessing your photos
@@ -50,7 +50,7 @@ Please refer to [Plex's Privacy Policy](https://www.plex.tv/about/privacy-legal/
 
 ### No Other Third Parties
 
-TruPlexPhotos does not use:
+Tru Photos does not use:
 - Analytics services (e.g., Google Analytics, Firebase)
 - Crash reporting services
 - Advertising networks
@@ -80,7 +80,7 @@ You have the right to:
 
 ## Children's Privacy
 
-TruPlexPhotos does not knowingly collect data from children under 13. The app is designed for users who have access to a Plex Media Server.
+Tru Photos does not knowingly collect data from children under 13. The app is designed for users who have access to a Plex Media Server.
 
 ## Changes to This Policy
 
@@ -88,17 +88,17 @@ We may update this privacy policy from time to time. Changes will be reflected i
 
 ## Open Source
 
-TruPlexPhotos is open source software. You can review the source code at:
-https://github.com/jacobtruman/TruPlexPhotos
+Tru Photos is open source software. You can review the source code at:
+https://github.com/jacobtruman/TruPhotos
 
 ## Contact
 
 For questions or concerns about privacy, please open an issue on GitHub:
-https://github.com/jacobtruman/TruPlexPhotos/issues
+https://github.com/jacobtruman/TruPhotos/issues
 
 ## Summary
 
-**TL;DR**: TruPlexPhotos is a privacy-focused app that:
+**TL;DR**: Tru Photos is a privacy-focused app that:
 - ✅ Stores data only on your device
 - ✅ Connects only to your Plex servers
 - ✅ Does not collect analytics or tracking data
