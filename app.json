@@ -1,41 +1,4 @@
 {
-  "expo": {
-    "name": "TruPlexPhotos",
-    "slug": "TruPlexPhotos",
-    "version": "1.0.4",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#111111"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.jacobtruman.TruPlexPhotos",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#111111"
-      },
-      "edgeToEdgeEnabled": true,
-      "backgroundColor": "#111111",
-      "package": "com.anonymous.TruPlexPhotos",
-      "versionCode": 8
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "62a73745-58a8-4ecc-87e1-0b0fddc97383"
-      }
-    }
-  }
+  "name": "TruPlexPhotos",
+  "displayName": "TruPlexPhotos"
 }

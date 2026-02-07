@@ -10,7 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import { colors, spacing, borderRadius, typography, commonStyles } from '../theme';
 import { FloatingRefreshButton } from '../components';
 import { useAuth } from '../context/AuthContext';

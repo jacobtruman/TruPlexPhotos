@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
 import {
   AuthState,
   PlexUser,
@@ -17,6 +16,7 @@ import {
   switchProfile,
   resourceToServer,
   getClientIdentifier,
+  SecureStorage,
 } from '../services/authService';
 import { getPhotoLibraries, filterAccessibleServers } from '../services/plexService';
 
@@ -70,8 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadSavedAuth = async () => {
     try {
       const [authToken, profileJson, clientId] = await Promise.all([
-        SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN),
-        SecureStore.getItemAsync(STORAGE_KEYS.SELECTED_PROFILE),
+        SecureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
+        SecureStorage.getItem(STORAGE_KEYS.SELECTED_PROFILE),
         getClientIdentifier(),
       ]);
 
@@ -85,13 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const serverKey = selectedProfile
           ? `${STORAGE_KEYS.SELECTED_SERVER}_${selectedProfile.id}`
           : STORAGE_KEYS.SELECTED_SERVER;
-        const savedServerId = await SecureStore.getItemAsync(serverKey);
+        const savedServerId = await SecureStorage.getItem(serverKey);
 
         // Load profile-specific library selection
         const libraryKey = selectedProfile
           ? `${STORAGE_KEYS.SELECTED_LIBRARY}_${selectedProfile.id}`
           : STORAGE_KEYS.SELECTED_LIBRARY;
-        const libraryJson = await SecureStore.getItemAsync(libraryKey);
+        const libraryJson = await SecureStorage.getItem(libraryKey);
         const savedLibrary: PlexLibrary | null = libraryJson ? JSON.parse(libraryJson) : null;
 
         // Fetch fresh data
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const tabKey = selectedProfile
           ? `${STORAGE_KEYS.SELECTED_TAB}_${selectedProfile.id}`
           : STORAGE_KEYS.SELECTED_TAB;
-        const savedTab = await SecureStore.getItemAsync(tabKey);
+        const savedTab = await SecureStorage.getItem(tabKey);
         const selectedTab: 'Timeline' | 'Library' = (savedTab === 'Timeline' || savedTab === 'Library') ? savedTab : 'Timeline';
 
         setState({
@@ -169,7 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Poll for auth completion (every 2 seconds, max 5 minutes)
       const maxAttempts = 150;
       for (let i = 0; i < maxAttempts; i++) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise<void>(resolve => setTimeout(resolve, 2000));
         const pinStatus = await checkPin(pin.id);
         
         if (pinStatus.authToken) {
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const servers = await filterAccessibleServers(allServers);
 
           // Save to secure storage (only auth token, user object is not used)
-          await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, pinStatus.authToken);
+          await SecureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, pinStatus.authToken);
 
           setState(prev => ({
             ...prev,
@@ -210,10 +210,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await Promise.all([
-      SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_PROFILE),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_SERVER),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_LIBRARY),
+      SecureStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN),
+      SecureStorage.removeItem(STORAGE_KEYS.SELECTED_PROFILE),
+      SecureStorage.removeItem(STORAGE_KEYS.SELECTED_SERVER),
+      SecureStorage.removeItem(STORAGE_KEYS.SELECTED_LIBRARY),
     ]);
     setState({ ...initialState, isLoading: false, clientIdentifier: state.clientIdentifier });
   }, [state.clientIdentifier]);
@@ -224,8 +224,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
       const newToken = await switchProfile(state.authToken, profile.id, pin);
-      await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, newToken);
-      await SecureStore.setItemAsync(STORAGE_KEYS.SELECTED_PROFILE, JSON.stringify(profile));
+      await SecureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, newToken);
+      await SecureStorage.setItem(STORAGE_KEYS.SELECTED_PROFILE, JSON.stringify(profile));
 
       // Re-fetch resources with the new profile token to get updated server access tokens
       // This is important because each profile may have different server access permissions
@@ -236,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Load this profile's saved server selection
       const serverKey = `${STORAGE_KEYS.SELECTED_SERVER}_${profile.id}`;
-      const savedServerId = await SecureStore.getItemAsync(serverKey);
+      const savedServerId = await SecureStorage.getItem(serverKey);
       let selectedServer: PlexServer | null = null;
 
       if (savedServerId) {
@@ -256,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Load this profile's saved library selection
       const libraryKey = `${STORAGE_KEYS.SELECTED_LIBRARY}_${profile.id}`;
-      const savedLibraryJson = await SecureStore.getItemAsync(libraryKey);
+      const savedLibraryJson = await SecureStorage.getItem(libraryKey);
       let selectedLibrary: PlexLibrary | null = null;
 
       if (savedLibraryJson && libraries.length > 0) {
@@ -267,7 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Load this profile's saved tab selection
       const tabKey = `${STORAGE_KEYS.SELECTED_TAB}_${profile.id}`;
-      const savedTab = await SecureStore.getItemAsync(tabKey);
+      const savedTab = await SecureStorage.getItem(tabKey);
       const selectedTab: 'Timeline' | 'Library' = (savedTab === 'Timeline' || savedTab === 'Library') ? savedTab : 'Timeline';
 
       setState(prev => ({
@@ -297,9 +297,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const serverKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_SERVER}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_SERVER;
-    await SecureStore.setItemAsync(serverKey, server.machineIdentifier);
+    await SecureStorage.setItem(serverKey, server.machineIdentifier);
     // Clear library when server changes
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_LIBRARY);
+    await SecureStorage.removeItem(STORAGE_KEYS.SELECTED_LIBRARY);
 
     setState(prev => ({ ...prev, selectedServer: server, selectedLibrary: null, libraries }));
   }, [state.selectedProfile]);
@@ -309,14 +309,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const libraryKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_LIBRARY;
-    await SecureStore.setItemAsync(libraryKey, JSON.stringify(library));
+    await SecureStorage.setItem(libraryKey, JSON.stringify(library));
     setState(prev => ({ ...prev, selectedLibrary: library }));
   }, [state.selectedProfile]);
 
   const clearLibrary = useCallback(async () => {
     // Delete profile-specific library key
     if (state.selectedProfile) {
-      await SecureStore.deleteItemAsync(`${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`);
+      await SecureStorage.removeItem(`${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`);
     }
     setState(prev => ({ ...prev, selectedLibrary: null }));
   }, [state.selectedProfile]);
@@ -324,8 +324,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearServer = useCallback(async () => {
     // Delete profile-specific server and library keys
     if (state.selectedProfile) {
-      await SecureStore.deleteItemAsync(`${STORAGE_KEYS.SELECTED_SERVER}_${state.selectedProfile.id}`);
-      await SecureStore.deleteItemAsync(`${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`);
+      await SecureStorage.removeItem(`${STORAGE_KEYS.SELECTED_SERVER}_${state.selectedProfile.id}`);
+      await SecureStorage.removeItem(`${STORAGE_KEYS.SELECTED_LIBRARY}_${state.selectedProfile.id}`);
     }
     setState(prev => ({ ...prev, selectedServer: null, selectedLibrary: null, libraries: [] }));
   }, [state.selectedProfile]);
@@ -333,7 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearProfile = useCallback(async () => {
     // Only clear the selected profile - don't delete server/library selections
     // so they can be restored when switching back to this profile
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.SELECTED_PROFILE);
+    await SecureStorage.removeItem(STORAGE_KEYS.SELECTED_PROFILE);
     setState(prev => ({ ...prev, selectedProfile: null, selectedServer: null, selectedLibrary: null, libraries: [] }));
   }, []);
 
@@ -368,7 +368,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tabKey = state.selectedProfile
       ? `${STORAGE_KEYS.SELECTED_TAB}_${state.selectedProfile.id}`
       : STORAGE_KEYS.SELECTED_TAB;
-    await SecureStore.setItemAsync(tabKey, tab);
+    await SecureStorage.setItem(tabKey, tab);
     setState(prev => ({ ...prev, selectedTab: tab }));
   }, [state.selectedProfile]);
 

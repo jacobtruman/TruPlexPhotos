@@ -6,15 +6,17 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Linking,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as WebBrowser from 'expo-web-browser';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { getVersionString } from '../constants/version';
 
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
 interface InfoItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IoniconsName;
   title: string;
   subtitle?: string;
   onPress?: () => void;
@@ -49,12 +51,12 @@ export const AboutScreen: React.FC = () => {
 
   const handlePrivacyPolicy = async () => {
     // TODO: Replace with your actual privacy policy URL
-    await WebBrowser.openBrowserAsync('https://github.com/jacobtruman/TruPlexPhotos/blob/main/PRIVACY.md');
+    await Linking.openURL('https://github.com/jacobtruman/TruPlexPhotos/blob/main/PRIVACY.md');
   };
 
   const handleOpenSource = async () => {
     // Opens the GitHub repository
-    await WebBrowser.openBrowserAsync('https://github.com/jacobtruman/TruPlexPhotos');
+    await Linking.openURL('https://github.com/jacobtruman/TruPlexPhotos');
   };
 
   return (

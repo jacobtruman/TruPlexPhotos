@@ -596,15 +596,26 @@ export function convertPlexPhotosToPhotos(
     const media = item.Media?.[0];
     const part = media?.Part?.[0];
 
-    // Build thumbnail URL
+    // Build thumbnail URL (small size for grid view)
     const thumbUrl = item.thumb
-      ? `${serverUrl}${item.thumb}?X-Plex-Token=${token}`
+      ? `${serverUrl}/photo/:/transcode?width=400&height=400&minSize=1&upscale=0&url=${encodeURIComponent(item.thumb)}&X-Plex-Token=${token}`
       : '';
 
-    // Build full image URL
-    const fullUrl = part?.key
-      ? `${serverUrl}${part.key}?X-Plex-Token=${token}`
-      : thumbUrl;
+    // Build full image URL for viewing
+    // Use photo transcoder with the part key (actual file) for full quality
+    // The thumb path returns limited resolution even with large dimensions requested
+    let fullUrl = '';
+    if (part?.key) {
+      // Use the part key (actual file path) through the transcoder for full resolution
+      const imgWidth = media?.width || 8000;
+      const imgHeight = media?.height || 8000;
+      fullUrl = `${serverUrl}/photo/:/transcode?width=${imgWidth}&height=${imgHeight}&minSize=1&upscale=0&url=${encodeURIComponent(part.key)}&X-Plex-Token=${token}`;
+    } else if (item.thumb) {
+      // Fallback to thumb if no part key available
+      const imgWidth = media?.width || 8000;
+      const imgHeight = media?.height || 8000;
+      fullUrl = `${serverUrl}/photo/:/transcode?width=${imgWidth}&height=${imgHeight}&minSize=1&upscale=0&url=${encodeURIComponent(item.thumb)}&X-Plex-Token=${token}`;
+    }
 
     // Determine media type - clips and videos are treated as video
     const isVideo = item.type === 'clip' || item.type === 'video';

@@ -1,28 +1,26 @@
+import 'react-native-get-random-values';
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { RootNavigator } from './src/navigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider } from './src/context/AuthContext';
+import { RootNavigator } from './src/navigation';
 import { colors } from './src/theme';
 
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: colors.background,
-  },
-};
-
-export default function App() {
+function App(): React.JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <NavigationContainer theme={theme}>
-          <RootNavigator />
-          <StatusBar style="light" />
+      <SafeAreaProvider>
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <NavigationContainer>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
         </NavigationContainer>
-      </AuthProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
+
+export default App;

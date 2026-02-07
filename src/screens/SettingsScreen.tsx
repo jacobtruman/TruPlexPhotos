@@ -8,12 +8,14 @@ import {
   Switch,
   Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
 interface SettingItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IoniconsName;
   title: string;
   subtitle?: string;
   onPress?: () => void;

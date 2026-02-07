@@ -1,6 +1,6 @@
-import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
-import * as Crypto from 'expo-crypto';
+import 'react-native-get-random-values';
+import * as Keychain from 'react-native-keychain';
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import { Platform } from 'react-native';
 import { PlexPin, PlexUser, PlexProfile, PlexServer, PlexResource, PlexConnection } from '../types';
 
@@ -17,12 +17,49 @@ const STORAGE_KEYS = {
   SELECTED_SERVER: 'plex_selected_server',
 };
 
+// Service name for keychain
+const KEYCHAIN_SERVICE = 'com.truplexphotos';
+
+// Helper functions for secure storage using react-native-keychain
+async function getSecureItem(key: string): Promise<string | null> {
+  try {
+    const credentials = await Keychain.getGenericPassword({ service: `${KEYCHAIN_SERVICE}.${key}` });
+    if (credentials) {
+      return credentials.password;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function setSecureItem(key: string, value: string): Promise<void> {
+  await Keychain.setGenericPassword(key, value, { service: `${KEYCHAIN_SERVICE}.${key}` });
+}
+
+async function removeSecureItem(key: string): Promise<void> {
+  await Keychain.resetGenericPassword({ service: `${KEYCHAIN_SERVICE}.${key}` });
+}
+
+// Generate UUID v4 using crypto.getRandomValues (polyfilled by react-native-get-random-values)
+function generateUUID(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+
+  // Set version (4) and variant (RFC4122)
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 // Get or generate client identifier
 export async function getClientIdentifier(): Promise<string> {
-  let clientId = await SecureStore.getItemAsync(STORAGE_KEYS.CLIENT_ID);
+  let clientId = await getSecureItem(STORAGE_KEYS.CLIENT_ID);
   if (!clientId) {
-    clientId = Crypto.randomUUID();
-    await SecureStore.setItemAsync(STORAGE_KEYS.CLIENT_ID, clientId);
+    clientId = generateUUID();
+    await setSecureItem(STORAGE_KEYS.CLIENT_ID, clientId);
   }
   return clientId;
 }
@@ -84,8 +121,13 @@ export async function checkPin(pinId: number): Promise<PlexPin> {
   return response.json();
 }
 
+// Browser result type for compatibility
+export interface BrowserResult {
+  type: 'cancel' | 'dismiss' | 'success';
+}
+
 // Open browser for Plex authentication
-export async function openPlexAuth(pinCode: string): Promise<WebBrowser.WebBrowserResult> {
+export async function openPlexAuth(pinCode: string): Promise<BrowserResult> {
   const clientId = await getClientIdentifier();
 
   // Build auth URL with proper encoding per Plex documentation
@@ -98,7 +140,45 @@ export async function openPlexAuth(pinCode: string): Promise<WebBrowser.WebBrows
 
   const authUrl = `https://app.plex.tv/auth#?${params.toString()}`;
 
-  return WebBrowser.openBrowserAsync(authUrl);
+  try {
+    if (await InAppBrowser.isAvailable()) {
+      const result = await InAppBrowser.open(authUrl, {
+        // iOS options
+        dismissButtonStyle: 'close',
+        preferredBarTintColor: '#1a1a2e',
+        preferredControlTintColor: 'white',
+        readerMode: false,
+        animated: true,
+        modalPresentationStyle: 'fullScreen',
+        modalTransitionStyle: 'coverVertical',
+        modalEnabled: true,
+        enableBarCollapsing: false,
+        // Android options
+        showTitle: true,
+        toolbarColor: '#1a1a2e',
+        secondaryToolbarColor: 'black',
+        navigationBarColor: 'black',
+        navigationBarDividerColor: 'white',
+        enableUrlBarHiding: true,
+        enableDefaultShare: false,
+        forceCloseOnRedirection: false,
+        animations: {
+          startEnter: 'slide_in_right',
+          startExit: 'slide_out_left',
+          endEnter: 'slide_in_left',
+          endExit: 'slide_out_right',
+        },
+      });
+      return { type: result.type === 'cancel' ? 'cancel' : 'dismiss' };
+    } else {
+      // Fallback: open in external browser
+      const { Linking } = require('react-native');
+      await Linking.openURL(authUrl);
+      return { type: 'dismiss' };
+    }
+  } catch {
+    return { type: 'cancel' };
+  }
 }
 
 // Get user info with auth token
@@ -208,3 +288,9 @@ export async function switchProfile(authToken: string, userId: string, pin?: str
   return match[1];
 }
 
+// Export secure storage helpers for use in AuthContext
+export const SecureStorage = {
+  getItem: getSecureItem,
+  setItem: setSecureItem,
+  removeItem: removeSecureItem,
+};

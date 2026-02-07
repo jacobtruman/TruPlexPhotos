@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { PlexProfile } from '../types';

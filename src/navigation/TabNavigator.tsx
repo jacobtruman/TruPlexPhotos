@@ -1,10 +1,12 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { PhotosScreen, AlbumsScreen } from '../screens';
 import { colors } from '../theme';
 import { RootTabParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
@@ -46,7 +48,7 @@ export const TabNavigator: React.FC = () => {
           fontWeight: '500',
         },
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          let iconName: IoniconsName;
 
           switch (route.name) {
             case 'Timeline':

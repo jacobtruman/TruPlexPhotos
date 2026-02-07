@@ -1,6 +1,6 @@
-import { Paths, File as ExpoFile } from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
-import { Platform } from 'react-native';
+import RNFS from 'react-native-fs';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import { Platform, PermissionsAndroid } from 'react-native';
 import { Photo } from '../types';
 
 export interface DownloadProgress {
@@ -17,31 +17,33 @@ export interface DownloadResult {
 
 export const requestMediaLibraryPermissions = async (): Promise<boolean> => {
   try {
-    // On Android, try to get current permissions first without requesting
-    // This avoids the AUDIO permission issue in Expo Go
-    const { status: existingStatus } = await MediaLibrary.getPermissionsAsync();
-    if (existingStatus === 'granted') {
-      return true;
-    }
-
-    // If not granted, try requesting with writeOnly on Android
     if (Platform.OS === 'android') {
-      // For Expo Go on Android, we'll skip permission request and let createAssetAsync handle it
-      // It will prompt the user if needed
-      return true;
+      // Android 13+ (API 33+) uses granular media permissions
+      const androidVersion = Platform.Version as number;
+      if (androidVersion >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        // Older Android versions use WRITE_EXTERNAL_STORAGE
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
     }
-
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    return status === 'granted';
-  } catch (error) {
-    // Return true to attempt the save - it may still work or prompt the user
+    // iOS doesn't require explicit permission for saving to camera roll
     return true;
+  } catch (error) {
+    console.error('Permission request error:', error);
+    return false;
   }
 };
 
 export const downloadPhoto = async (
   photo: Photo,
-  _onProgress?: (progress: DownloadProgress) => void
+  onProgress?: (progress: DownloadProgress) => void
 ): Promise<DownloadResult> => {
   try {
     // Request permissions
@@ -54,7 +56,7 @@ export const downloadPhoto = async (
     }
 
     // Create destination file in cache directory
-    // Ensure filename has a proper extension for MediaLibrary.createAssetAsync
+    // Ensure filename has a proper extension for CameraRoll.saveAsset
     let filename = photo.filename || `photo_${photo.id}`;
 
     // Check if filename has a valid image/video extension
@@ -67,7 +69,7 @@ export const downloadPhoto = async (
       filename = `${filename}.${extension}`;
     }
 
-    const destinationFile = new ExpoFile(Paths.cache, filename);
+    const destinationPath = `${RNFS.CachesDirectoryPath}/${filename}`;
 
     // Only download full resolution - don't fall back to thumbnail
     if (!photo.fullUri) {
@@ -79,28 +81,44 @@ export const downloadPhoto = async (
 
     const downloadUrl = photo.fullUri;
 
-    // Download the file using the new static method
-    // Type assertion needed to resolve conflict between expo-file-system File and DOM File
-    const downloadedFile = await ExpoFile.downloadFileAsync(
-      downloadUrl,
-      destinationFile,
-      { idempotent: true }
-    ) as InstanceType<typeof ExpoFile>;
+    // Download the file using react-native-fs
+    const downloadResult = await RNFS.downloadFile({
+      fromUrl: downloadUrl,
+      toFile: destinationPath,
+      progress: (res) => {
+        if (onProgress) {
+          onProgress({
+            totalBytesWritten: res.bytesWritten,
+            totalBytesExpectedToWrite: res.contentLength,
+            progress: res.contentLength > 0 ? res.bytesWritten / res.contentLength : 0,
+          });
+        }
+      },
+      progressDivider: 10, // Report progress every 10%
+    }).promise;
+
+    if (downloadResult.statusCode !== 200) {
+      return {
+        success: false,
+        message: `Download failed with status ${downloadResult.statusCode}`,
+      };
+    }
 
     try {
-      // Save to media library using the file URI
-      // Skip album organization in Expo Go due to permission limitations
-      const asset = await MediaLibrary.createAssetAsync(downloadedFile.uri);
+      // Save to camera roll using @react-native-camera-roll/camera-roll
+      const asset = await CameraRoll.saveAsset(`file://${destinationPath}`, {
+        type: photo.mediaType === 'video' ? 'video' : 'photo',
+      });
 
       return {
         success: true,
         message: 'Photo saved to gallery',
-        localUri: asset.uri,
+        localUri: asset.node?.image?.uri || destinationPath,
       };
     } finally {
       // Clean up the temporary file
       try {
-        await downloadedFile.delete();
+        await RNFS.unlink(destinationPath);
       } catch {
         // Ignore cleanup errors
       }

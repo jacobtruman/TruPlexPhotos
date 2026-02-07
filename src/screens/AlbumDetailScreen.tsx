@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, RefreshControl, Platform } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { PhotoThumbnail, AlbumCard, LoadingState } from '../components';
 import { colors, spacing, typography, commonStyles } from '../theme';
 import { RootStackParamList, Photo, Album, photoToSerializable } from '../types';

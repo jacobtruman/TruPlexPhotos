@@ -9,16 +9,19 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+type MaterialIconsName = React.ComponentProps<typeof MaterialIcons>['name'];
 
 interface OptionItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  materialIcon?: keyof typeof MaterialIcons.glyphMap;
+  icon: IoniconsName;
+  materialIcon?: MaterialIconsName;
   title: string;
   subtitle?: string;
   onPress: () => void;

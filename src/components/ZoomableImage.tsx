@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Image, View, Text, useWindowDimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Image, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -7,7 +7,8 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import RNFS from 'react-native-fs';
 import { colors } from '../theme';
 
 interface ZoomableImageProps {
@@ -182,15 +183,105 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, onToggleContr
     },
   };
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [localUri, setLocalUri] = useState<string | null>(null);
+
+  // Download image to cache and display from local file
+  useEffect(() => {
+    let isMounted = true;
+    // Create a unique cache key from the full URI (including query params which contain the image path)
+    // Use a simple hash to keep the filename reasonable
+    const hashCode = (str: string): string => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash).toString(16);
+    };
+    const cacheKey = hashCode(uri);
+    // Add version suffix to cache key to invalidate old low-quality cached images
+    const cachePath = `${RNFS.CachesDirectoryPath}/img_${cacheKey}_v3.jpg`;
+
+    const loadImage = async () => {
+      setIsLoading(true);
+      setHasError(false);
+      setLocalUri(null);
+
+      try {
+        // Check if already cached
+        const exists = await RNFS.exists(cachePath);
+        if (exists) {
+          if (isMounted) {
+            setLocalUri(`file://${cachePath}`);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Download to cache
+        const result = await RNFS.downloadFile({
+          fromUrl: uri,
+          toFile: cachePath,
+          background: false,
+          discretionary: false,
+        }).promise;
+
+        if (isMounted) {
+          if (result.statusCode === 200) {
+            setLocalUri(`file://${cachePath}`);
+            setIsLoading(false);
+          } else {
+            console.error('Image download failed with status:', result.statusCode);
+            setHasError(true);
+            setIsLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('Image download error:', error);
+        if (isMounted) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (uri && uri.trim() !== '') {
+      loadImage();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [uri]);
+
   return (
     <GestureDetector gesture={composedGesture}>
       <Animated.View style={[dynamicStyles.container, animatedStyle]}>
         {hasValidUri ? (
-          <Image
-            source={{ uri }}
-            style={dynamicStyles.image}
-            resizeMode="contain"
-          />
+          <>
+            {localUri && (
+              <Image
+                source={{ uri: localUri }}
+                style={dynamicStyles.image}
+                resizeMode="contain"
+              />
+            )}
+            {isLoading && (
+              <View style={[dynamicStyles.placeholderContainer, styles.loadingOverlay]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.placeholderText}>Loading...</Text>
+              </View>
+            )}
+            {hasError && (
+              <View style={[dynamicStyles.placeholderContainer, styles.loadingOverlay]}>
+                <Ionicons name="alert-circle-outline" size={100} color={colors.error} />
+                <Text style={styles.placeholderText}>Failed to load image</Text>
+              </View>
+            )}
+          </>
         ) : (
           <View style={dynamicStyles.placeholderContainer}>
             <Ionicons name="image-outline" size={100} color={colors.textSecondary} />
@@ -207,6 +298,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 16,
     fontSize: 16,
+  },
+  loadingOverlay: {
+    position: 'absolute',
   },
 });
 

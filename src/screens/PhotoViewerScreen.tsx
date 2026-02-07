@@ -12,9 +12,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { Paths, File as ExpoFile } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import RNFS from 'react-native-fs';
+import Share from 'react-native-share';
 import { colors, spacing } from '../theme';
 import { RootStackParamList, Photo, serializableToPhoto } from '../types';
 import { downloadPhoto } from '../services/downloadService';
@@ -152,38 +152,41 @@ export const PhotoViewerScreen: React.FC = () => {
 
   const handleShare = useCallback(async () => {
     setSharing(true);
-    let downloadedFile: InstanceType<typeof ExpoFile> | null = null;
+    let downloadedFilePath: string | null = null;
     try {
-      // Check if sharing is available
-      if (!(await Sharing.isAvailableAsync())) {
-        Alert.alert('Error', 'Sharing is not available on this device');
-        return;
-      }
-
       // Download to cache first
       const downloadUrl = currentPhoto.fullUri || currentPhoto.uri;
       const filename = currentPhoto.filename || `photo_${currentPhoto.id}.jpg`;
-      const destinationFile = new ExpoFile(Paths.cache, filename);
+      downloadedFilePath = `${RNFS.CachesDirectoryPath}/${filename}`;
 
-      downloadedFile = await ExpoFile.downloadFileAsync(
-        downloadUrl,
-        destinationFile,
-        { idempotent: true }
-      ) as InstanceType<typeof ExpoFile>;
+      const downloadResult = await RNFS.downloadFile({
+        fromUrl: downloadUrl,
+        toFile: downloadedFilePath,
+      }).promise;
 
-      // Share the file
-      await Sharing.shareAsync(downloadedFile.uri, {
-        mimeType: 'image/jpeg',
-        dialogTitle: 'Share Photo',
+      if (downloadResult.statusCode !== 200) {
+        Alert.alert('Error', 'Failed to download photo for sharing');
+        return;
+      }
+
+      // Share the file using react-native-share
+      await Share.open({
+        url: `file://${downloadedFilePath}`,
+        type: 'image/jpeg',
+        title: 'Share Photo',
       });
     } catch (error) {
+      // User cancelled sharing - this is not an error
+      if ((error as Error).message?.includes('User did not share')) {
+        return;
+      }
       console.error('Share error:', error);
       Alert.alert('Error', 'Failed to share photo');
     } finally {
       // Clean up the temporary file
-      if (downloadedFile) {
+      if (downloadedFilePath) {
         try {
-          await downloadedFile.delete();
+          await RNFS.unlink(downloadedFilePath);
         } catch {
           // Ignore cleanup errors
         }

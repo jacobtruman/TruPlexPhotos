@@ -1,324 +1,97 @@
-# TruPlexPhotos
+This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
-A beautiful, native mobile photo viewer for Plex Media Server, built with React Native and Expo.
+# Getting Started
 
-## 📱 Overview
+> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
-TruPlexPhotos is a dedicated mobile application for browsing and viewing photos from your Plex Media Server. It provides a clean, intuitive interface optimized for mobile devices with features like folder navigation, timeline view, photo downloads, and sharing.
+## Step 1: Start Metro
 
-## ✨ Features
+First, you will need to run **Metro**, the JavaScript build tool for React Native.
 
-### Core Functionality
-- **Plex Authentication** - Secure OAuth login with Plex account
-- **Multi-Server Support** - Connect to multiple Plex servers
-- **Profile Management** - Switch between Plex managed profiles
-- **Library Selection** - Browse multiple photo libraries
+To start the Metro dev server, run the following command from the root of your React Native project:
 
-### Photo Browsing
-- **Timeline View** - Photos organized by date with infinite scroll
-- **Folder Navigation** - Browse photos organized in folders/albums
-- **Breadcrumb Navigation** - Easy navigation through folder hierarchy
-- **Folder Previews** - Visual folder cards with cover photos and item counts
-- **Mixed Content** - Seamlessly display folders and photos in the same grid
+```sh
+# Using npm
+npm start
 
-### Photo Viewing
-- **Full-Screen Viewer** - Swipe through photos with smooth transitions
-- **Photo Metadata** - View detailed EXIF data, ratings, and descriptions
-- **Video Support** - Play videos with duration indicators
-- **Rating System** - Rate photos directly from the viewer
-
-### Photo Management
-- **Download to Device** - Save photos to your device's gallery
-- **Share Photos** - Share photos via native share sheet
-- **Pull to Refresh** - Refresh content with pull-down gesture
-
-### UI/UX
-- **Dark Theme** - Beautiful dark interface with Plex orange accents
-- **Responsive Grid** - 3-column grid layout with consistent spacing
-- **Rounded Thumbnails** - Modern rounded corners on all media
-- **Gradient Overlays** - Dynamic color gradients from photo metadata
-- **Edge-to-Edge Display** - Full-screen immersive experience on Android
-
-## 🛠 Tech Stack
-
-### Framework & Language
-- **React Native** 0.81.5
-- **Expo SDK** 54
-- **TypeScript** 5.9.2
-- **React** 19.1.0
-
-### Navigation
-- **React Navigation** 7.x
-  - Native Stack Navigator
-  - Bottom Tab Navigator
-
-### Key Dependencies
-- **expo-secure-store** - Secure token storage
-- **expo-file-system** - File downloads and caching
-- **expo-media-library** - Save photos to device gallery
-- **expo-sharing** - Native share functionality
-- **expo-linear-gradient** - Gradient overlays
-- **expo-crypto** - Client ID generation
-- **expo-web-browser** - OAuth authentication
-- **react-native-reanimated** - Smooth animations
-- **react-native-gesture-handler** - Touch gestures
-
-## 📁 Project Structure
-
-```
-TruPlexPhotos/
-├── src/
-│   ├── components/       # Reusable UI components
-│   │   ├── AlbumCard.tsx
-│   │   ├── PhotoThumbnail.tsx
-│   │   ├── PhotoGrid.tsx
-│   │   └── ...
-│   ├── screens/          # Screen components
-│   │   ├── LoginScreen.tsx
-│   │   ├── PhotosScreen.tsx
-│   │   ├── AlbumsScreen.tsx
-│   │   ├── AlbumDetailScreen.tsx
-│   │   ├── PhotoViewerScreen.tsx
-│   │   └── ...
-│   ├── navigation/       # Navigation configuration
-│   ├── services/         # API and business logic
-│   │   ├── authService.ts
-│   │   ├── plexService.ts
-│   │   └── downloadService.ts
-│   ├── context/          # React Context providers
-│   ├── hooks/            # Custom React hooks
-│   ├── theme/            # Colors, typography, styles
-│   ├── types/            # TypeScript type definitions
-│   └── utils/            # Utility functions
-├── assets/               # Images and icons
-├── app.json             # Expo configuration
-├── eas.json             # EAS Build configuration
-└── package.json         # Dependencies
+# OR using Yarn
+yarn start
 ```
 
-## 🚀 Getting Started
+## Step 2: Build and run your app
 
-### Prerequisites
-- Node.js 18+ and npm
-- Expo CLI: `npm install -g expo-cli`
-- For iOS: Xcode and iOS Simulator
-- For Android: Android Studio and Android Emulator
-- A Plex Media Server with photo libraries
+With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
 
-### Installation
+### Android
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd TruPlexPhotos
-   ```
+```sh
+# Using npm
+npm run android
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-4. **Run on a device/simulator**
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app for physical device
-
-
-
-
-## 📦 Building for Production
-
-### Version Management
-
-This project uses **Semantic Versioning (SemVer)** with automated build number tracking.
-
-**Bump version before building:**
-
-```bash
-# Bug fixes (1.0.0 -> 1.0.1)
-npm run version:patch
-
-# New features (1.0.0 -> 1.1.0)
-npm run version:minor
-
-# Breaking changes (1.0.0 -> 2.0.0)
-npm run version:major
+# OR using Yarn
+yarn android
 ```
 
-This automatically updates `package.json`, `app.json`, and increments build numbers.
+### iOS
 
-See [VERSIONING.md](docs/VERSIONING.md) for detailed versioning guide.
+For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
-### Build APK with EAS Build
+The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
 
-1. **Install EAS CLI**
-   ```bash
-   npm install -g eas-cli
-   ```
-
-2. **Login to Expo**
-   ```bash
-   eas login
-   ```
-
-3. **Build for Android**
-   ```bash
-   npm run build:android
-   # or: eas build --platform android --profile preview
-   ```
-
-4. **Build for iOS**
-   ```bash
-   npm run build:ios
-   # or: eas build --platform ios --profile preview
-   ```
-
-The build will be processed on Expo's servers and you'll receive a download link when complete.
-
-### Local Development Build
-
-```bash
-# Generate native Android project
-npx expo prebuild
-
-# Build locally
-cd android
-./gradlew assembleRelease
+```sh
+bundle install
 ```
 
-## 🎨 Design System
+Then, and every time you update your native dependencies, run:
 
-### Color Palette
-- **Primary**: `#E5A00D` (Plex Orange/Gold)
-- **Primary Dark**: `#CC8A00`
-- **Background**: `#1F1F1F` (Dark Gray)
-- **Surface**: `#282828`
-- **Surface Light**: `#333333`
-- **Text Primary**: `#FFFFFF`
-- **Text Secondary**: `#B3B3B3`
+```sh
+bundle exec pod install
+```
 
-### Spacing System
-- **xs**: 4px
-- **sm**: 8px
-- **md**: 16px
-- **lg**: 24px
-- **xl**: 32px
-- **xxl**: 48px
+For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
 
-### Grid Layout
-- **3-column grid** for photos and folders
-- **4px margins** between items
-- **4px container padding** on edges
-- **Rounded corners** (4px border radius) on all media
+```sh
+# Using npm
+npm run ios
 
-## 🔐 Authentication Flow
+# OR using Yarn
+yarn ios
+```
 
-1. User taps "Sign in with Plex"
-2. App generates a PIN via Plex API
-3. Opens Plex OAuth page in browser
-4. User authorizes the app
-5. App polls for PIN status
-6. Receives auth token and stores securely
-7. Fetches user profile and available servers
-8. User selects profile (if managed users exist)
-9. User selects server
-10. User selects photo library
-11. App navigates to main interface
+If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
 
-## 📸 Photo Grid System
+This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
-The app uses a unified grid system for displaying both folders and photos:
+## Step 3: Modify your app
 
-- **Consistent sizing**: All items calculated based on screen width
-- **Container padding**: 4px on left and right edges
-- **Item margins**: 4px on all sides of each item
-- **Size calculation**: `(SCREEN_WIDTH - CONTAINER_PADDING - (NUM_COLUMNS * 8)) / NUM_COLUMNS`
-- **Union types**: Folders and photos can be mixed in the same grid
+Now that you have successfully run the app, let's make changes!
 
-## 🗂 Key Components
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
-### AlbumCard
-Displays folder/album with:
-- Folder tab design (subtle orange accent)
-- Cover photo with gradient overlay
-- Title and item count
-- Dynamic colors from photo metadata
+When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 
-### PhotoThumbnail
-Displays photo/video with:
-- Rounded corners
-- Video duration badge
-- Selection state
-- Placeholder for missing images
+- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
+- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
 
-### PhotoGrid
-Timeline view with:
-- Date-based sections
-- Infinite scroll
-- Pull to refresh
-- Loading states
+## Congratulations! :tada:
 
-### PhotoViewerScreen
-Full-screen photo viewer with:
-- Horizontal swipe navigation
-- Metadata panel
-- Download and share actions
-- Rating functionality
+You've successfully run and modified your React Native App. :partying_face:
 
-## 🔧 Configuration
+### Now what?
 
-### app.json
-- **edgeToEdgeEnabled**: Full-screen on Android
-- **backgroundColor**: Dark theme throughout
-- **newArchEnabled**: React Native new architecture
+- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
+- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
 
-### Key Settings
-- **Portrait orientation** only
-- **Dark UI style** (status bar, navigation)
-- **Plex orange** accent color throughout
+# Troubleshooting
 
-## 📝 Development Notes
+If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
 
-### TypeScript
-- Strict mode enabled
-- Comprehensive type definitions in `src/types/index.ts`
-- Type-safe navigation with route params
+# Learn More
 
-### State Management
-- React Context for global state (auth, server, library)
-- Local state with useState for screen-specific data
-- Custom hooks for shared logic (e.g., `useFolderCounts`)
+To learn more about React Native, take a look at the following resources:
 
-### API Integration
-- All Plex API calls in `plexService.ts`
-- Authentication logic in `authService.ts`
-- Download/share logic in `downloadService.ts`
-
-## 🐛 Known Issues
-
-- Expo Vector Icons type definitions may show warnings (cosmetic only)
-- Some Plex servers may require additional network configuration
-
-## 📄 License
-
-This project is private and not licensed for public use.
-
-## 🙏 Acknowledgments
-
-- Built with [Expo](https://expo.dev)
-- Designed for [Plex Media Server](https://www.plex.tv)
-- Icons from [Ionicons](https://ionic.io/ionicons)
-
-## 📧 Contact
-
-For questions or issues, please contact the repository owner.
-
----
-
-**Version**: 1.0.0
-**Last Updated**: January 2026
+- [React Native Website](https://reactnative.dev) - learn more about React Native.
+- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
+- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
+- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
+- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.

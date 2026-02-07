@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View, Image, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { Photo } from '../types';
 import { colors, borderRadius } from '../theme';
 import { formatDuration } from '../utils/photoUtils';

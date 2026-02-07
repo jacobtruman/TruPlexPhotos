@@ -8,7 +8,7 @@ import {
   FlatList,
   Pressable,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, spacing, typography, borderRadius } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { PlexLibrary } from '../types';
